@@ -29,7 +29,9 @@ const dealWon = (over: { id?: string; cnpj?: string; version?: string } = {}) =>
 
 describe("Contrato da Ponte (ponte.openapi.yaml)", () => {
   it("health", async () => {
-    ponte.check("/health", "get", await stack.raw("ponte", "/health"));
+    const health = await stack.raw("ponte", "/health");
+    expect(health.body.version).toBe("1.1.0");
+    ponte.check("/health", "get", health);
   });
 
   it("webhook do CRM: 202, 200 duplicado, 400, 401 (assinatura e janela) e 422 (versão)", async () => {
@@ -138,6 +140,16 @@ describe("Contrato da Ponte (ponte.openapi.yaml)", () => {
     const metrics = await stack.admin("/metrics");
     expect(metrics.body.duplicatesIgnored).toBeGreaterThanOrEqual(2);
     ponte.check("/v1/admin/metrics", "get", metrics);
+
+    // v1.1: alertas. Há um evento na fila de falhas (CNPJ inválido), então o alerta existe e cumpre o esquema.
+    await waitFor(() => stack.ponte.prisma.event.findFirst({ where: { status: "DEAD" } }), { label: "evento reprocessado voltou a DEAD" });
+    const alerts = await stack.admin("/alerts");
+    expect(alerts.status).toBe(200);
+    expect(alerts.body.data.map((a: { code: string }) => a.code)).toContain("DEAD_LETTERS_PRESENT");
+    ponte.check("/v1/admin/alerts", "get", alerts);
+    const alertsUnauth = await stack.raw("ponte", "/v1/admin/alerts");
+    expect(alertsUnauth.status).toBe(401);
+    ponte.check("/v1/admin/alerts", "get", alertsUnauth);
   });
 
   it("mapeamento: consultar, publicar nova versão (201) e recusar versão inválida (422)", async () => {
