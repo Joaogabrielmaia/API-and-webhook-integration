@@ -1,0 +1,474 @@
+openapi: 3.0.3
+info:
+  title: ERP simples (cenário Serviços Aurora)
+  version: 1.0.0
+  description: |
+    Sistema simples criado dentro deste repositório para o estudo (`apps/mock-erp`).
+    Não é um produto comercial. Autenticação das rotas `/v1` por `X-Api-Key`.
+
+    **Idempotência na criação:** `POST /v1/orders` e `POST /v1/invoices` exigem `externalRef` único.
+    Repetir o mesmo `externalRef` devolve o registro existente com `200` e o cabeçalho `Idempotent-Replay: true`.
+
+    **Webhook emitido:** ao pagar uma cobrança, o ERP envia `invoice.paid` à Ponte
+    (`POST {PONTE_URL}/v1/webhooks/erp`), assinado como no CRM. O ERP envia uma única vez e não reenvia.
+
+    **Indisponibilidade simulada:** `POST /v1/admin/chaos` permite colocar o ERP em modo `down` (503) ou `slow`.
+servers:
+  - url: http://localhost:4002
+security:
+  - ApiKey: []
+paths:
+  /health:
+    get:
+      summary: Verificação de saúde
+      security: []
+      responses:
+        '200':
+          description: Serviço no ar
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, enum: [ok] }
+  /v1/customers:
+    get:
+      summary: Lista ou busca clientes por CNPJ (14 dígitos)
+      parameters:
+        - name: taxId
+          in: query
+          required: false
+          schema: { type: string, pattern: '^[0-9]{14}$' }
+      responses:
+        '200':
+          description: Clientes
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    post:
+      summary: Cria cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerInput' }
+      responses:
+        '201':
+          description: Cliente criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Já existe cliente com este CNPJ (`details.existingId`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/Invalid' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/customers/{id}:
+    get:
+      summary: Busca cliente
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Cliente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    patch:
+      summary: Atualiza contato (telefone e e-mail)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                phone: { type: string, nullable: true }
+                email: { type: string, nullable: true }
+      responses:
+        '200':
+          description: Cliente atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Invalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/orders:
+    get:
+      summary: Lista pedidos, opcionalmente por prefixo de `externalRef`
+      parameters:
+        - name: externalRefPrefix
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Pedidos
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    post:
+      summary: Cria pedido (idempotente por `externalRef`)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderInput' }
+      responses:
+        '201':
+          description: Pedido criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '200':
+          description: Repetição; devolve o pedido existente (`Idempotent-Replay` true)
+          headers:
+            Idempotent-Replay:
+              schema: { type: string, enum: ['true'] }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Invalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/orders/{id}:
+    get:
+      summary: Busca pedido
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Pedido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/invoices:
+    get:
+      summary: Lista cobranças, opcionalmente por prefixo de `externalRef`
+      parameters:
+        - name: externalRefPrefix
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Cobranças
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Invoice' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+    post:
+      summary: Cria cobrança (idempotente por `externalRef`)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InvoiceInput' }
+      responses:
+        '201':
+          description: Cobrança criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+        '200':
+          description: Repetição; devolve a cobrança existente
+          headers:
+            Idempotent-Replay:
+              schema: { type: string, enum: ['true'] }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Invalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/invoices/{id}:
+    get:
+      summary: Busca cobrança
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Cobrança
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/invoices/{id}/release:
+    post:
+      summary: Financeiro libera a cobrança em conferência (EM_CONFERENCIA → ABERTA)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Cobrança liberada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Cobrança não está em conferência
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/invoices/{id}/pay:
+    post:
+      summary: Registra o pagamento; emite o webhook `invoice.paid`
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paidAt: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Cobrança paga
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Só cobrança ABERTA pode ser paga
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /v1/admin/chaos:
+    get:
+      summary: Estado atual da injeção de falha
+      responses:
+        '200':
+          description: Estado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chaos' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Define o modo de falha (apenas para demonstração e testes)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Chaos' }
+      responses:
+        '200':
+          description: Estado aplicado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chaos' }
+        '422': { $ref: '#/components/responses/Invalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/webhook-deliveries:
+    get:
+      summary: Lista as entregas de webhook feitas pelo ERP
+      responses:
+        '200':
+          description: Entregas
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/WebhookDelivery' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/webhook-deliveries/{id}/resend:
+    post:
+      summary: Reenvia uma entrega (mesmo id de evento)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Entrega reenviada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookDelivery' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    Unauthorized:
+      description: Chave de API ausente ou inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Invalid:
+      description: Dados inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unavailable:
+      description: ERP indisponível (por exemplo, janela de backup)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string, example: ERP-VAL-001 }
+            message: { type: string }
+            requestId: { type: string }
+            details: { type: object, additionalProperties: true }
+    CustomerInput:
+      type: object
+      required: [taxId, name]
+      properties:
+        taxId: { type: string, pattern: '^[0-9]{14}$', example: '11222333000181' }
+        name: { type: string, example: CONDOMINIO EDIFICIO SOLAR }
+        phone: { type: string, nullable: true, example: '5531998765432' }
+        email: { type: string, nullable: true, example: financeiro@solar.example }
+    Customer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerInput'
+        - type: object
+          required: [id, createdAt, updatedAt]
+          properties:
+            id: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    OrderInput:
+      type: object
+      required: [customerId, externalRef, description, totalCents]
+      properties:
+        customerId: { type: string, format: uuid }
+        externalRef: { type: string, example: 'ponte:deal:2f6b0c9e-0000-4000-8000-000000000001' }
+        description: { type: string }
+        totalCents: { type: integer, minimum: 1 }
+    Order:
+      allOf:
+        - $ref: '#/components/schemas/OrderInput'
+        - type: object
+          required: [id, status, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            status: { type: string, enum: [ABERTO] }
+            createdAt: { type: string, format: date-time }
+    InvoiceInput:
+      type: object
+      required: [orderId, externalRef, amountCents, dueDate]
+      properties:
+        orderId: { type: string, format: uuid }
+        externalRef: { type: string }
+        amountCents: { type: integer, minimum: 1 }
+        dueDate: { type: string, format: date }
+        status: { type: string, enum: [ABERTA, EM_CONFERENCIA], default: ABERTA }
+    Invoice:
+      type: object
+      required: [id, orderId, externalRef, amountCents, dueDate, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderId: { type: string, format: uuid }
+        externalRef: { type: string }
+        amountCents: { type: integer }
+        dueDate: { type: string, format: date }
+        status: { type: string, enum: [EM_CONFERENCIA, ABERTA, PAGA] }
+        paidAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+    Chaos:
+      type: object
+      required: [mode]
+      properties:
+        mode: { type: string, enum: [none, down, slow] }
+        delayMs: { type: integer, minimum: 0, maximum: 60000 }
+    WebhookDelivery:
+      type: object
+      required: [id, eventId, invoiceId, status, attempts, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        eventId: { type: string, format: uuid }
+        invoiceId: { type: string, format: uuid }
+        status: { type: string, enum: [DELIVERED, FAILED] }
+        httpStatus: { type: integer, nullable: true }
+        attempts: { type: integer }
+        lastError: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    InvoicePaidEvent:
+      description: Corpo do webhook `invoice.paid` enviado à Ponte (documentação do evento emitido).
+      type: object
+      required: [id, type, version, occurredAt, data]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [invoice.paid] }
+        version: { type: string, enum: ['1'] }
+        occurredAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [invoiceId, orderId, externalRef, amountCents, paidAt]
+          properties:
+            invoiceId: { type: string, format: uuid }
+            orderId: { type: string, format: uuid }
+            externalRef: { type: string }
+            amountCents: { type: integer }
+            paidAt: { type: string, format: date-time }

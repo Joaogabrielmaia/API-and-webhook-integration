@@ -1,0 +1,387 @@
+openapi: 3.0.3
+info:
+  title: CRM simples (cenário Serviços Aurora)
+  version: 1.0.0
+  description: |
+    Sistema simples criado dentro deste repositório para o estudo (`apps/mock-crm`).
+    Não é um produto comercial. Autenticação das rotas `/v1` por chave em `X-Api-Key`.
+
+    **Webhook emitido:** ao mover um negócio para `GANHO`, o CRM envia `deal.won` à Ponte
+    (`POST {PONTE_URL}/v1/webhooks/crm`), assinado com HMAC-SHA256
+    (`X-Signature: sha256=HMAC(segredo, X-Timestamp + "." + corpo)`).
+servers:
+  - url: http://localhost:4001
+security:
+  - ApiKey: []
+paths:
+  /health:
+    get:
+      summary: Verificação de saúde
+      security: []
+      responses:
+        '200':
+          description: Serviço no ar
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, enum: [ok] }
+  /v1/customers:
+    get:
+      summary: Lista clientes
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Cria cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerInput' }
+      responses:
+        '201':
+          description: Cliente criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/customers/{id}:
+    get:
+      summary: Busca cliente
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Cliente
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/deals:
+    get:
+      summary: Lista negócios
+      parameters:
+        - name: stage
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/Stage' }
+      responses:
+        '200':
+          description: Lista de negócios
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Deal' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Cria negócio (etapa LEAD)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DealInput' }
+      responses:
+        '201':
+          description: Negócio criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deal' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/deals/{id}:
+    get:
+      summary: Busca negócio
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Negócio
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deal' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      summary: Altera título, valor ou prazo (incrementa `version`)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DealPatch' }
+      responses:
+        '200':
+          description: Negócio atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deal' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/deals/{id}/stage:
+    post:
+      summary: Move o negócio de etapa; ao entrar em GANHO emite o webhook `deal.won`
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stage]
+              properties:
+                stage: { $ref: '#/components/schemas/Stage' }
+      responses:
+        '200':
+          description: Negócio na nova etapa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deal' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/deals/{id}/erp-link:
+    put:
+      summary: Grava os identificadores do ERP (chamado pela Ponte; idempotente)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [erpCustomerId, erpOrderId, erpInvoiceId, billingStatus]
+              properties:
+                erpCustomerId: { type: string }
+                erpOrderId: { type: string }
+                erpInvoiceId: { type: string }
+                billingStatus: { $ref: '#/components/schemas/BillingStatus' }
+      responses:
+        '200':
+          description: Negócio com os vínculos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deal' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/deals/{id}/billing-status:
+    patch:
+      summary: Atualiza o status da cobrança (chamado pela Ponte)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [billingStatus]
+              properties:
+                billingStatus: { $ref: '#/components/schemas/BillingStatus' }
+                paidAt: { type: string, format: date-time, nullable: true }
+      responses:
+        '200':
+          description: Negócio atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Deal' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/webhook-deliveries:
+    get:
+      summary: Lista as entregas de webhook feitas pelo CRM
+      responses:
+        '200':
+          description: Entregas
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/WebhookDelivery' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/webhook-deliveries/{id}/resend:
+    post:
+      summary: Reenvia uma entrega (mesmo id de evento)
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Entrega reenviada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookDelivery' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Chave de API ausente ou inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string, example: CRM-REQ-001 }
+            message: { type: string }
+            requestId: { type: string }
+            details: { type: object, additionalProperties: true }
+    Stage:
+      type: string
+      enum: [LEAD, PROPOSTA, NEGOCIACAO, GANHO, PERDIDO]
+    BillingStatus:
+      type: string
+      description: Conjunto extensível; consumidores devem tolerar valores novos.
+      enum: [NAO_COBRADO, EM_CONFERENCIA, ABERTA, PAGO]
+    CustomerInput:
+      type: object
+      required: [name, cnpj]
+      properties:
+        name: { type: string, example: Condomínio Edifício Solar }
+        cnpj: { type: string, description: 'Texto livre digitado pelo vendedor (com ou sem máscara).', example: 11.222.333/0001-81 }
+        phone: { type: string, nullable: true, example: (31) 99876-5432 }
+        email: { type: string, nullable: true, example: Financeiro@Solar.example }
+    Customer:
+      allOf:
+        - $ref: '#/components/schemas/CustomerInput'
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+    DealInput:
+      type: object
+      required: [title, customerId, value]
+      properties:
+        title: { type: string, example: Contrato de manutenção anual }
+        customerId: { type: string, format: uuid }
+        value: { type: string, description: 'Campo de texto em pt-BR.', example: '12.500,50' }
+        paymentTermDays: { type: integer, minimum: 0, maximum: 365, nullable: true, example: 30 }
+    DealPatch:
+      type: object
+      minProperties: 1
+      properties:
+        title: { type: string }
+        value: { type: string }
+        paymentTermDays: { type: integer, minimum: 0, maximum: 365, nullable: true }
+    Deal:
+      type: object
+      required: [id, title, customerId, customer, stage, value, version, billingStatus, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        customerId: { type: string, format: uuid }
+        customer: { $ref: '#/components/schemas/Customer' }
+        stage: { $ref: '#/components/schemas/Stage' }
+        value: { type: string }
+        paymentTermDays: { type: integer, nullable: true }
+        version: { type: integer, minimum: 1 }
+        wonAt: { type: string, format: date-time, nullable: true }
+        erpCustomerId: { type: string, nullable: true }
+        erpOrderId: { type: string, nullable: true }
+        erpInvoiceId: { type: string, nullable: true }
+        billingStatus: { $ref: '#/components/schemas/BillingStatus' }
+        paidAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    WebhookDelivery:
+      type: object
+      required: [id, eventId, dealId, status, attempts, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        eventId: { type: string, format: uuid }
+        dealId: { type: string, format: uuid }
+        status: { type: string, enum: [DELIVERED, FAILED] }
+        httpStatus: { type: integer, nullable: true }
+        attempts: { type: integer }
+        lastError: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    DealWonEvent:
+      description: Corpo do webhook `deal.won` enviado à Ponte (documentação do evento emitido).
+      type: object
+      required: [id, type, version, occurredAt, data]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [deal.won] }
+        version: { type: string, enum: ['1'] }
+        occurredAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [deal, customer]
+          properties:
+            deal:
+              type: object
+              required: [id, title, value, wonAt, version]
+              properties:
+                id: { type: string, format: uuid }
+                title: { type: string }
+                value: { type: string }
+                paymentTermDays: { type: integer, nullable: true }
+                wonAt: { type: string, format: date-time }
+                version: { type: integer }
+            customer:
+              type: object
+              required: [id, name, cnpj]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+                cnpj: { type: string }
+                phone: { type: string, nullable: true }
+                email: { type: string, nullable: true }

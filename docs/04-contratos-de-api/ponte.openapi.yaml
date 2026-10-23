@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  title: Ponte — API de integração CRM ↔ ERP
+  version: 1.0.0
+  description: |
+    API da Ponte. Dois grupos de rotas:
+
+    - **Webhooks** (`/v1/webhooks/*`): recebidos do CRM e do ERP, autenticados por **assinatura HMAC-SHA256**.
+    - **Administração** (`/v1/admin/*`): usadas pelo painel, autenticadas por `X-Admin-Key`.
+
+    Assinatura: `X-Signature: sha256=<hex>` onde `<hex> = HMAC_SHA256(segredo, X-Timestamp + "." + corpoBruto)`.
+    `X-Timestamp` em segundos Unix, tolerância de 5 minutos. `X-Event-Id` deve ser igual ao `id` do corpo.
+
+    Política de versão: ver `docs/03-arquitetura/adr/ADR-007-versionamento-da-api.md`.
+    Códigos de erro: ver `catalogo-de-erros.md`.
+servers:
+  - url: http://localhost:4000
+paths:
+  /health:
+    get:
+      summary: Verificação de saúde
+      security: []
+      responses:
+        '200':
+          description: Serviço no ar
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  version: { type: string, example: 1.0.0 }
+  /v1/webhooks/crm:
+    post:
+      summary: Recebe `deal.won` do CRM
+      security: [ { HmacSignature: [] } ]
+      parameters:
+        - { $ref: '#/components/parameters/XTimestamp' }
+        - { $ref: '#/components/parameters/XSignature' }
+        - { $ref: '#/components/parameters/XEventId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DealWonEvent' }
+      responses:
+        '202':
+          description: Evento aceito e enfileirado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookAck' }
+        '200':
+          description: Evento repetido (mesma chave de idempotência); nada foi feito
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookAck' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /v1/webhooks/erp:
+    post:
+      summary: Recebe `invoice.paid` do ERP
+      security: [ { HmacSignature: [] } ]
+      parameters:
+        - { $ref: '#/components/parameters/XTimestamp' }
+        - { $ref: '#/components/parameters/XSignature' }
+        - { $ref: '#/components/parameters/XEventId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InvoicePaidEvent' }
+      responses:
+        '202':
+          description: Evento aceito e enfileirado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookAck' }
+        '200':
+          description: Evento repetido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookAck' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /v1/admin/events:
+    get:
+      summary: Lista eventos
+      security: [ { AdminKey: [] } ]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/EventStatus' }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: offset
+          in: query
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: Eventos, do mais recente para o mais antigo
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, total]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/EventSummary' }
+                  total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/events/{id}:
+    get:
+      summary: Detalha um evento, com tentativas e conteúdo
+      security: [ { AdminKey: [] } ]
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Evento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/events/{id}/reprocess:
+    post:
+      summary: Reprocessa manualmente um evento em `DEAD`
+      security: [ { AdminKey: [] } ]
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '202':
+          description: Evento devolvido à fila
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, eventId]
+                properties:
+                  status: { type: string, enum: [requeued] }
+                  eventId: { type: string, format: uuid }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: O evento não está em `DEAD` (`PONTE-ADM-001`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/metrics:
+    get:
+      summary: Métricas agregadas da integração
+      security: [ { AdminKey: [] } ]
+      responses:
+        '200':
+          description: Métricas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Metrics' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/mapping:
+    get:
+      summary: Mapeamento ativo e histórico de versões
+      security: [ { AdminKey: [] } ]
+      responses:
+        '200':
+          description: Mapeamento
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [active, history]
+                properties:
+                  active: { $ref: '#/components/schemas/MappingVersion' }
+                  history:
+                    type: array
+                    items: { $ref: '#/components/schemas/MappingVersion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      summary: Publica uma nova versão do mapeamento (torna-se a ativa)
+      security: [ { AdminKey: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rules]
+              properties:
+                rules:
+                  type: array
+                  items: { $ref: '#/components/schemas/MappingRule' }
+                note: { type: string }
+      responses:
+        '201':
+          description: Nova versão ativa
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MappingVersion' }
+        '422':
+          description: Mapeamento inválido (`PONTE-MAP-001`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/reconciliation/run:
+    post:
+      summary: Executa a reconciliação agora
+      security: [ { AdminKey: [] } ]
+      responses:
+        '200':
+          description: Resultado da execução
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReconciliationRun' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/divergences:
+    get:
+      summary: Lista divergências
+      security: [ { AdminKey: [] } ]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [OPEN, RESOLVED] }
+      responses:
+        '200':
+          description: Divergências
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Divergence' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/divergences/{id}/resolve:
+    post:
+      summary: Aplica a correção assistida (somente `BILLING_STATUS_MISMATCH`)
+      security: [ { AdminKey: [] } ]
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+      responses:
+        '200':
+          description: Divergência resolvida
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Divergence' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Tipo sem correção assistida (`PONTE-ADM-004`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/errors:
+    get:
+      summary: Catálogo de erros (mesma fonte do código)
+      security: [ { AdminKey: [] } ]
+      responses:
+        '200':
+          description: Catálogo
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ErrorCatalogEntry' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    HmacSignature:
+      type: apiKey
+      in: header
+      name: X-Signature
+      description: '`sha256=` + HMAC-SHA256 hex de `X-Timestamp + "." + corpoBruto`'
+    AdminKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    XTimestamp:
+      name: X-Timestamp
+      in: header
+      required: true
+      schema: { type: string, example: '1767225600' }
+    XSignature:
+      name: X-Signature
+      in: header
+      required: true
+      schema: { type: string, example: 'sha256=3b1c…' }
+    XEventId:
+      name: X-Event-Id
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    BadRequest:
+      description: Corpo ou cabeçalhos fora do contrato (`PONTE-REQ-001`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Assinatura inválida, timestamp fora da janela ou chave de administração inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unprocessable:
+      description: Versão de evento não suportada (`PONTE-REQ-002`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso não encontrado (`PONTE-ADM-002`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string, example: PONTE-AUTH-001 }
+            message: { type: string }
+            requestId: { type: string }
+            details: { type: object, additionalProperties: true }
+    WebhookAck:
+      type: object
+      required: [status, eventId]
+      properties:
+        status: { type: string, enum: [accepted, duplicate] }
+        eventId: { type: string, format: uuid }
+    EventStatus:
+      type: string
+      description: Conjunto extensível; consumidores devem tolerar valores novos.
+      enum: [RECEIVED, PROCESSING, RETRYING, PROCESSED, IGNORED, DEAD]
+    DealWonEvent:
+      type: object
+      required: [id, type, version, occurredAt, data]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [deal.won] }
+        version: { type: string, enum: ['1'] }
+        occurredAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [deal, customer]
+          properties:
+            deal:
+              type: object
+              required: [id, title, value, wonAt, version]
+              properties:
+                id: { type: string, format: uuid }
+                title: { type: string }
+                value: { type: string }
+                paymentTermDays: { type: integer, nullable: true }
+                wonAt: { type: string, format: date-time }
+                version: { type: integer, minimum: 1 }
+            customer:
+              type: object
+              required: [id, name, cnpj]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+                cnpj: { type: string }
+                phone: { type: string, nullable: true }
+                email: { type: string, nullable: true }
+    InvoicePaidEvent:
+      type: object
+      required: [id, type, version, occurredAt, data]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [invoice.paid] }
+        version: { type: string, enum: ['1'] }
+        occurredAt: { type: string, format: date-time }
+        data:
+          type: object
+          required: [invoiceId, orderId, externalRef, amountCents, paidAt]
+          properties:
+            invoiceId: { type: string, format: uuid }
+            orderId: { type: string, format: uuid }
+            externalRef: { type: string }
+            amountCents: { type: integer }
+            paidAt: { type: string, format: date-time }
+    EventSummary:
+      type: object
+      required: [id, source, type, status, attempts, duplicateCount, receivedAt]
+      properties:
+        id: { type: string, format: uuid }
+        source: { type: string, enum: [CRM, ERP] }
+        type: { type: string }
+        entityId: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/EventStatus' }
+        attempts: { type: integer }
+        duplicateCount: { type: integer }
+        receivedAt: { type: string, format: date-time }
+        processedAt: { type: string, format: date-time, nullable: true }
+        durationMs: { type: integer, nullable: true }
+        lastErrorCode: { type: string, nullable: true }
+        lastErrorMessage: { type: string, nullable: true }
+        ignoreReason: { type: string, nullable: true }
+        nextRunAt: { type: string, format: date-time, nullable: true }
+    EventDetail:
+      allOf:
+        - $ref: '#/components/schemas/EventSummary'
+        - type: object
+          required: [payload, attemptLog]
+          properties:
+            idempotencyKey: { type: string }
+            entityVersion: { type: integer, nullable: true }
+            payload: { type: object, additionalProperties: true }
+            attemptLog:
+              type: array
+              items: { $ref: '#/components/schemas/Attempt' }
+    Attempt:
+      type: object
+      required: [number, outcome, startedAt, durationMs]
+      properties:
+        number: { type: integer }
+        outcome: { type: string, enum: [OK, RETRYABLE_ERROR, PERMANENT_ERROR, IGNORED] }
+        errorCode: { type: string, nullable: true }
+        errorMessage: { type: string, nullable: true }
+        startedAt: { type: string, format: date-time }
+        durationMs: { type: integer }
+        nextRunAt: { type: string, format: date-time, nullable: true }
+    Metrics:
+      type: object
+      required: [countsByStatus, duplicatesIgnored, avgDurationMs, maxDurationMs, openDivergences]
+      properties:
+        countsByStatus:
+          type: object
+          additionalProperties: { type: integer }
+        duplicatesIgnored: { type: integer }
+        avgDurationMs: { type: integer, nullable: true }
+        maxDurationMs: { type: integer, nullable: true }
+        openDivergences: { type: integer }
+        lastEventAt: { type: string, format: date-time, nullable: true }
+    MappingRule:
+      type: object
+      required: [target, source, transform]
+      properties:
+        target:
+          type: string
+          description: Destino permitido (lista fechada).
+          example: customer.taxId
+        source:
+          oneOf:
+            - { type: string }
+            - { type: array, items: { type: string }, minItems: 1 }
+        transform:
+          type: string
+          description: Transformação permitida (lista fechada).
+          example: cnpjDigits
+        required: { type: boolean, default: true }
+    MappingVersion:
+      type: object
+      required: [version, active, rules, createdAt]
+      properties:
+        version: { type: integer }
+        active: { type: boolean }
+        note: { type: string, nullable: true }
+        rules:
+          type: array
+          items: { $ref: '#/components/schemas/MappingRule' }
+        createdAt: { type: string, format: date-time }
+    ReconciliationRun:
+      type: object
+      required: [id, trigger, startedAt, dealsChecked, divergencesOpen]
+      properties:
+        id: { type: string, format: uuid }
+        trigger: { type: string, enum: [SCHEDULED, MANUAL] }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time, nullable: true }
+        dealsChecked: { type: integer }
+        divergencesOpen: { type: integer }
+        divergencesResolved: { type: integer }
+    Divergence:
+      type: object
+      required: [id, key, type, status, firstSeenAt, lastSeenAt, detail]
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        type:
+          type: string
+          enum: [NOT_SYNCED, AMOUNT_MISMATCH, BILLING_STATUS_MISMATCH, ORDER_MISSING_IN_ERP, CRM_LINK_MISSING]
+        crmDealId: { type: string, nullable: true }
+        status: { type: string, enum: [OPEN, RESOLVED] }
+        detail: { type: object, additionalProperties: true }
+        firstSeenAt: { type: string, format: date-time }
+        lastSeenAt: { type: string, format: date-time }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+    ErrorCatalogEntry:
+      type: object
+      required: [code, httpStatus, retryable, title, cause, action]
+      properties:
+        code: { type: string }
+        httpStatus: { type: integer, nullable: true }
+        retryable: { type: boolean }
+        title: { type: string }
+        cause: { type: string }
+        action: { type: string }
