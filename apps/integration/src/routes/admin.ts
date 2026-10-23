@@ -7,12 +7,15 @@ import { applyMapping, validateMappingRules, type MappingRule } from "../mapping
 import { DEFAULT_MAPPING_RULES } from "../mapping/defaults";
 import type { JobQueue } from "../queue/queue";
 import type { Reconciler } from "../reconciliation/reconciler";
+import type { Worker } from "../queue/worker";
+import { collectAlertInput, evaluateAlerts, oldestDueAgeSeconds } from "../alerts";
 
 interface Deps {
   prisma: PrismaClient;
   config: PonteConfig;
   queue: JobQueue;
   reconciler: Reconciler;
+  worker: Worker;
 }
 
 const iso = (d: Date | null | undefined): string | null => (d ? d.toISOString() : null);
@@ -80,7 +83,7 @@ export async function loadActiveRules(prisma: PrismaClient): Promise<MappingRule
 const EVENT_STATUSES = ["RECEIVED", "PROCESSING", "RETRYING", "PROCESSED", "IGNORED", "DEAD"] as const;
 
 export async function registerAdminRoutes(app: FastifyInstance, deps: Deps): Promise<void> {
-  const { prisma, config, queue, reconciler } = deps;
+  const { prisma, config, queue, reconciler, worker } = deps;
 
   await app.register(
     async (admin) => {
@@ -111,12 +114,13 @@ export async function registerAdminRoutes(app: FastifyInstance, deps: Deps): Pro
       });
 
       admin.get("/metrics", async () => {
-        const [byStatus, dupAgg, durAgg, openDivergences, last] = await Promise.all([
+        const [byStatus, dupAgg, durAgg, openDivergences, last, oldestDue] = await Promise.all([
           prisma.event.groupBy({ by: ["status"], _count: { _all: true } }),
           prisma.event.aggregate({ _sum: { duplicateCount: true } }),
           prisma.event.aggregate({ where: { status: "PROCESSED", durationMs: { not: null } }, _avg: { durationMs: true }, _max: { durationMs: true } }),
           prisma.divergence.count({ where: { status: "OPEN" } }),
           prisma.event.aggregate({ _max: { receivedAt: true } }),
+          oldestDueAgeSeconds(prisma, config.worker.lockTimeoutMs),
         ]);
         const countsByStatus: Record<string, number> = Object.fromEntries(EVENT_STATUSES.map((s) => [s, 0]));
         for (const row of byStatus) countsByStatus[row.status] = row._count._all;
@@ -127,7 +131,14 @@ export async function registerAdminRoutes(app: FastifyInstance, deps: Deps): Pro
           maxDurationMs: durAgg._max.durationMs,
           openDivergences,
           lastEventAt: iso(last._max.receivedAt),
+          oldestPendingAgeSeconds: oldestDue === null ? null : Math.round(oldestDue),
         };
+      });
+
+      // v1.1 (ADR-012): alertas calculados na hora, sem estado próprio.
+      admin.get("/alerts", async () => {
+        const input = await collectAlertInput(prisma, config.worker.lockTimeoutMs, worker.state);
+        return { data: evaluateAlerts(input, config.alerts), generatedAt: input.now.toISOString() };
       });
 
       admin.get("/mapping", async () => {

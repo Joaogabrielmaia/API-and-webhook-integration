@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { AppError } from "@ponte/shared";
 import type { PrismaClient } from "../generated/client";
 import { HANDLERS, type HandlerContext } from "../handlers";
+import type { WorkerState } from "../alerts";
 import { computeBackoffMs, type BackoffPolicy } from "./backoff";
 import { JobQueue, type ClaimedJob } from "./queue";
 
@@ -28,6 +29,7 @@ export class Worker {
   private running = false;
   private paused = false;
   private timer: NodeJS.Timeout | undefined;
+  private lastTickAt: Date | null = null;
   private readonly inFlight = new Set<Promise<void>>();
 
   constructor(private readonly opts: WorkerOptions) {}
@@ -49,6 +51,11 @@ export class Worker {
     return this.paused;
   }
 
+  /** Estado exposto em /health e nos alertas (ADR-012). */
+  get state(): WorkerState {
+    return { running: this.running, paused: this.paused, lastTickAt: this.lastTickAt ? this.lastTickAt.toISOString() : null };
+  }
+
   /** Espera os jobs em andamento terminarem (testes). */
   async drain(): Promise<void> {
     await Promise.allSettled([...this.inFlight]);
@@ -66,6 +73,7 @@ export class Worker {
 
   private async tick(): Promise<void> {
     if (!this.running) return;
+    this.lastTickAt = new Date();
     try {
       if (!this.paused) {
         const free = this.opts.concurrency - this.inFlight.size;
