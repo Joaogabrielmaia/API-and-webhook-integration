@@ -36,7 +36,9 @@ describe("US-06: retentativa com backoff", () => {
     expect(attempts.map((a) => a.number)).toEqual([1, 2, 3, 4, 5]);
     expect(attempts.slice(0, 4).every((a) => a.outcome === "RETRYABLE_ERROR" && a.nextRunAt !== null)).toBe(true);
     expect(attempts[4]!.nextRunAt).toBeNull();
-    const waits = attempts.slice(0, 4).map((a) => a.nextRunAt!.getTime() - (a.startedAt.getTime() + a.durationMs));
+    // Mede só com o relógio da aplicação (fim de uma tentativa → início da seguinte). `nextRunAt` vem do relógio do
+    // Postgres (outro relógio, dentro do Docker); misturar os dois mede o desvio entre eles, não a política.
+    const waits = attempts.slice(0, 4).map((a, i) => attempts[i + 1]!.startedAt.getTime() - (a.startedAt.getTime() + a.durationMs));
     // A política garante o piso (40, 80, 160, 320 ms) e o crescimento; o excesso é só latência do banco, então não há teto.
     const expected = [40, 80, 160, 320];
     waits.forEach((w, i) => expect(w, `espera após a tentativa ${i + 1}`).toBeGreaterThanOrEqual(expected[i]! - 5));
