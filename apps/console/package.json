@@ -1,0 +1,15 @@
+{
+  "name": "@ponte/console",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@ponte/shared": "*",
+    "fastify": "^5.2.0"
+  }
+}

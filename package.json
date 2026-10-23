@@ -1,0 +1,40 @@
+{
+  "name": "ponte",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ponte: integração entre CRM e ERP com idempotência, retentativa, fila de falhas e reconciliação.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "setup": "tsx scripts/setup-env.ts",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w @ponte/mock-crm && npm run db:migrate -w @ponte/mock-erp && npm run db:migrate -w @ponte/integration",
+    "db:generate": "npm run db:generate -w @ponte/mock-crm && npm run db:generate -w @ponte/mock-erp && npm run db:generate -w @ponte/integration",
+    "dev": "concurrently -n crm,erp,ponte,console -c blue,green,magenta,yellow \"npm run dev -w @ponte/mock-crm\" \"npm run dev -w @ponte/mock-erp\" \"npm run dev -w @ponte/integration\" \"npm run dev -w @ponte/console\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:contract": "vitest run --project contract",
+    "test:failure": "vitest run --project failure",
+    "test:e2e": "playwright test",
+    "docs:errors": "tsx scripts/generate-error-catalog.ts",
+    "demo": "tsx scripts/demo.ts"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.1.1",
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "concurrently": "^9.1.0",
+    "dotenv-cli": "^7.4.4",
+    "prisma": "^6.2.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8",
+    "yaml": "^2.7.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@ponte/mock-erp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "dotenv -e ../../.env -- prisma migrate deploy"
+  },
+  "dependencies": {
+    "@ponte/shared": "*",
+    "@prisma/client": "^6.2.0",
+    "fastify": "^5.2.0",
+    "zod": "^3.24.1"
+  }
+}
