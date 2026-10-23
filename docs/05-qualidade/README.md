@@ -24,12 +24,14 @@ Fonte: [resultados/execucao-dos-testes.txt](resultados/execucao-dos-testes.txt) 
 
 | Camada | Arquivos | Testes | Resultado |
 |---|---|---|---|
-| Unitário | 8 | 98 | todos passaram |
-| Contrato | 3 | 18 | todos passaram; **43 de 43 operações** do OpenAPI exercitadas (CRM 13, ERP 17, Ponte 13) |
-| Integração | 9 | 59 | todos passaram |
+| Unitário | 9 | 106 | todos passaram |
+| Contrato | 3 | 18 | todos passaram; **44 de 44 operações** do OpenAPI exercitadas (CRM 13, ERP 17, Ponte 14) |
+| Integração | 10 | 67 | todos passaram |
 | Falha injetada | 1 | 2 | todos passaram |
-| **Vitest, total** | **21** | **177** | **177 passaram, 0 falharam** (69,3 s no total, projetos em paralelo) |
-| E2E (Playwright) | 1 | 9 | 9 passaram (27,9 s) |
+| **Vitest, total** | **23** | **193** | **193 passaram, 0 falharam** (69,7 s no total, projetos em paralelo) |
+| E2E (Playwright) | 1 | 10 | 10 passaram (28,3 s) |
+
+Gravação feita na **v1.1.0** (a v1.0.0 tinha 177 testes Vitest e 9 E2E; a v1.1 acrescentou os do alerta de fila parada).
 
 ![Execução dos testes](../screenshots/15-execucao-dos-testes.png)
 
@@ -64,6 +66,7 @@ npm run test:record  # roda tudo e grava a saída em docs/05-qualidade/resultado
 | RNF-03 resiliência | `backoff.test.ts` (janela de 3 h 01 min na política de produção), `erp-down-batch.test.ts` |
 | RNF-06 contratos | `*.contract.test.ts` |
 | ADR-002 fila | `queue.test.ts`: `SKIP LOCKED` nunca entrega o mesmo job a dois workers |
+| ADR-012 alerta de fila parada (v1.1) | `alerts.test.ts` (unitário, 8) e `tests/integration/alerts.test.ts` (8) |
 
 ## O que eu **não** testei (limites declarados)
 - **Carga e desempenho.** Não há teste de carga. O tempo de 122 a 465 ms do ganho até `PROCESSED` (54 ms para o evento de pagamento), visto nas execuções locais, vale para este ambiente e nenhum outro. Não afirmo capacidade.

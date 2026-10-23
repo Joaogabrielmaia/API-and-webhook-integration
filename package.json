@@ -1,6 +1,6 @@
 {
   "name": "ponte",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Ponte: integração entre CRM e ERP com idempotência, retentativa, fila de falhas e reconciliação.",
   "license": "MIT",
@@ -27,7 +27,8 @@
     "dev:demo": "tsx scripts/dev-demo.ts",
     "demo": "tsx scripts/demo.ts",
     "test:record": "tsx scripts/record-test-run.ts",
-    "test:print": "playwright test --config playwright.print.config.ts"
+    "test:print": "playwright test --config playwright.print.config.ts",
+    "docs:failure": "tsx scripts/sync-failure-doc.ts"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",

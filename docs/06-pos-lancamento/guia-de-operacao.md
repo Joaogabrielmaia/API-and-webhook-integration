@@ -10,6 +10,17 @@ Para quem acompanha a integração no dia a dia (no cenário fictício, a analis
 | Depois de qualquer indisponibilidade do ERP | "Em retentativa" deve esvaziar sozinho; o que sobrar em "Fila de falhas" precisa de ação | Painel, **Eventos** e **Fila de falhas** |
 | Uma vez por semana, ou quando alguém reclamar | Rodar a reconciliação e ler a lista | Painel, **Divergências** |
 
+## Alertas (v1.1)
+
+O painel mostra um banner no topo de **todas** as telas quando há algo a fazer, e a API devolve o mesmo em `GET /v1/admin/alerts` ([ADR-012](../03-arquitetura/adr/ADR-012-alerta-de-fila-parada.md)).
+
+| Alerta | Quando aparece | O que fazer |
+|---|---|---|
+| **Fila parada** (`QUEUE_STALLED`) | Há trabalho vencido esperando há 5 minutos ou mais (`QUEUE_STALL_SECONDS`). Fica **crítico** a partir de 15 min | A mensagem diz se o worker está pausado, parado ou ativo. Parado: reinicie a Ponte. Ativo: o ERP ou o CRM provavelmente não respondem; veja os eventos em retentativa. Uma retentativa agendada para o futuro **não** dispara este alerta |
+| **Fila de falhas** (`DEAD_LETTERS_PRESENT`) | Há eventos na fila de falhas | Siga a seção abaixo. Durante a janela de backup do ERP é esperado; confira depois que ele voltar |
+
+O cartão **espera mais antiga na fila** da visão geral mostra o mesmo número que o alerta usa.
+
 ## O que fazer em cada situação
 
 ### Evento na fila de falhas

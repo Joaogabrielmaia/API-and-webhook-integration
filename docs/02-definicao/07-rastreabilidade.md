@@ -14,6 +14,7 @@ Do problema ao teste. A coluna "Teste" aponta para arquivos que existem neste re
 | Saber se pagou | RF-10 | RN-08 | US-08 | ADR-001 | `apps/integration/src/handlers/invoice-paid.ts` | `tests/integration/payment-sync.test.ts` |
 | Achar divergências | RF-12, RNF-09 | RN-11 | US-09 | ADR-006 | `apps/integration/src/reconciliation` | `tests/integration/reconciliation.test.ts` |
 | Evento antigo não vence | RF-14 | RN-07 | US-13 | ADR-003 | `apps/integration/src/handlers/deal-won.ts` | `tests/integration/out-of-order.test.ts` |
+| Fila parada sem ninguém ver (v1.1) | RF-11, RNF-01, RNF-05 | — | — | ADR-012 | `apps/integration/src/alerts.ts`, `apps/console` | `apps/integration/src/alerts.test.ts`, `tests/integration/alerts.test.ts`, `e2e/console.spec.ts` |
 | Painel | RF-11, RNF-05 | — | US-11 | ADR-010 | `apps/console` | `e2e/console.spec.ts`, `apps/console/src/app.test.ts` |
 | Catálogo de erros | RF-13 | — | US-12 | — | `packages/shared/src/errors.ts` | `packages/shared/src/errors.test.ts`, `scripts/generate-error-catalog.ts` |
 | Contratos | RNF-06, RNF-08 | — | — | ADR-007 | `docs/04-contratos-de-api/*.yaml` | `tests/contract/*.contract.test.ts` |
