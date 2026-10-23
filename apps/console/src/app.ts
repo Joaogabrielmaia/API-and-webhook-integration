@@ -27,7 +27,9 @@ interface EventSummary {
   nextRunAt: string | null;
 }
 interface Attempt { number: number; outcome: string; errorCode: string | null; errorMessage: string | null; startedAt: string; durationMs: number; nextRunAt: string | null }
-interface Metrics { countsByStatus: Record<string, number>; duplicatesIgnored: number; avgDurationMs: number | null; maxDurationMs: number | null; openDivergences: number; lastEventAt: string | null }
+interface Metrics { countsByStatus: Record<string, number>; duplicatesIgnored: number; avgDurationMs: number | null; maxDurationMs: number | null; openDivergences: number; lastEventAt: string | null; oldestPendingAgeSeconds?: number | null }
+interface Alert { code: string; severity: "warning" | "critical"; message: string; since: string | null; details: Record<string, unknown> }
+const ALERT_LABEL: Record<string, string> = { QUEUE_STALLED: "Fila parada", DEAD_LETTERS_PRESENT: "Fila de falhas" };
 interface MappingRule { target: string; source: string | string[]; transform: string; required?: boolean }
 interface MappingVersion { version: number; active: boolean; note: string | null; rules: MappingRule[]; createdAt: string }
 interface Divergence { id: string; key: string; type: string; crmDealId: string | null; status: string; detail: Record<string, unknown>; firstSeenAt: string; lastSeenAt: string; resolvedAt: string | null }
@@ -115,6 +117,24 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
       body,
     });
 
+  /** v1.1 (ADR-012): banner com os alertas vigentes em todas as telas. Se a Ponte não responde, simplesmente não mostra. */
+  async function alertsBanner(): Promise<string> {
+    try {
+      const res = await ponte<{ data: Alert[] }>("/alerts");
+      if (res.status !== 200) return "";
+      return res.body.data
+        .map((a) => {
+          const link = a.code === "DEAD_LETTERS_PRESENT" ? '<a href="/dead-letters">Ver a fila de falhas →</a>' : '<a href="/events?status=RECEIVED">Ver eventos esperando →</a>';
+          return `<div class="banner ${a.severity === "critical" ? "danger" : "warn"}" data-alert="${escapeHtml(a.code)}">⚠ ${escapeHtml(ALERT_LABEL[a.code] ?? a.code)}: ${escapeHtml(a.message)} ${link}</div>`;
+        })
+        .join("");
+    } catch {
+      return "";
+    }
+  }
+
+  const withAlerts = async (active: string, title: string, body: string, banner = ""): Promise<string> => layout(active, title, body, banner + (await alertsBanner()));
+
   const unavailable = (reply: FastifyReply, err: PonteUnavailable) =>
     reply.status(503).type("text/html").send(layout("", "Indisponível", `<h1>Ponte indisponível</h1><p class="sub">O painel não conseguiu falar com a Ponte (${escapeHtml(err.message)}).</p>`, '<div class="banner danger">Ponte indisponível</div>'));
 
@@ -156,12 +176,13 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
         ${stat(m.duplicatesIgnored, "duplicatas descartadas")}
         ${stat(formatDuration(m.avgDurationMs), "tempo médio até concluir")}
         ${stat(m.openDivergences, "divergências abertas", m.openDivergences > 0 ? "warn" : "")}
+        ${stat(m.oldestPendingAgeSeconds == null ? "—" : formatDuration(m.oldestPendingAgeSeconds * 1000), "espera mais antiga na fila", (m.oldestPendingAgeSeconds ?? 0) >= 300 ? "danger" : "")}
       </div>
       <p class="muted">O tempo é medido do recebimento do evento até a conclusão, incluindo a espera na fila e as retentativas.</p>
       <h2>Eventos mais recentes</h2>
       ${eventsTable(recent.body.data, "Nenhum evento ainda.")}
       <p><a href="/events">Ver todos os eventos →</a></p>`;
-    return reply.type("text/html").send(layout("home", "Visão geral", body));
+    return reply.type("text/html").send(await withAlerts("home", "Visão geral", body));
   });
 
   app.get<{ Querystring: { status?: string } }>("/events", async (req, reply) => {
@@ -173,7 +194,7 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
       <p class="sub">${res.body.total} evento(s)${status ? ` com situação “${escapeHtml(STATUS_LABEL[status] ?? status)}”` : ""}.</p>
       <div class="row" style="margin-bottom:14px">${filters.map((f) => `<a class="btn ${f.key === (status ?? "") ? "" : "secondary"}" href="/events${f.key ? `?status=${f.key}` : ""}" style="${f.key === (status ?? "") ? "" : "background:#fff;color:#4f46e5;border:1px solid #4f46e5"}">${escapeHtml(f.label)}</a>`).join("")}</div>
       ${eventsTable(res.body.data, "Nenhum evento com este filtro.")}`;
-    return reply.type("text/html").send(layout("events", "Eventos", body));
+    return reply.type("text/html").send(await withAlerts("events", "Eventos", body));
   });
 
   app.get<{ Params: { id: string } }>("/events/:id", async (req, reply) => {
@@ -210,7 +231,7 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
       ${e.status === "DEAD" ? `<form method="post" action="/events/${e.id}/reprocess" style="margin-top:14px"><button>Reprocessar este evento</button></form>` : ""}
       <h2>Conteúdo do evento</h2>
       <pre>${escapeHtml(JSON.stringify(e.payload, null, 2))}</pre>`;
-    return reply.type("text/html").send(layout("events", "Evento", body));
+    return reply.type("text/html").send(await withAlerts("events", "Evento", body));
   });
 
   app.post<{ Params: { id: string } }>("/events/:id/reprocess", async (req, reply) => {
@@ -236,7 +257,7 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
         res.body.data,
         "Nenhum evento na fila de falhas.",
       )}`;
-    return reply.type("text/html").send(layout("dead", "Fila de falhas", body));
+    return reply.type("text/html").send(await withAlerts("dead", "Fila de falhas", body));
   });
 
   app.get("/divergences", async (_req, reply) => {
@@ -260,7 +281,7 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
       ${table(cols(true), open, "Nenhuma divergência aberta.")}
       <h2>Resolvidas (${resolved.length})</h2>
       ${table(cols(false), resolved, "Nenhuma divergência resolvida ainda.")}`;
-    return reply.type("text/html").send(layout("divergences", "Divergências", body));
+    return reply.type("text/html").send(await withAlerts("divergences", "Divergências", body));
   });
 
   app.post("/reconciliation/run", async (_req, reply) => {
@@ -302,7 +323,7 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
         history,
       )}
       <p class="muted">Publicar uma nova versão é feito pela API administrativa (<code>PUT /v1/admin/mapping</code>); a Ponte valida destinos, transformações e a cobertura dos campos obrigatórios antes de ativar.</p>`;
-    return reply.type("text/html").send(layout("mapping", "Mapeamento", body));
+    return reply.type("text/html").send(await withAlerts("mapping", "Mapeamento", body));
   });
 
   app.get("/errors", async (_req, reply) => {
@@ -320,7 +341,7 @@ export async function buildConsoleApp(config: ConsoleConfig): Promise<FastifyIns
         ],
         res.body.data,
       )}`;
-    return reply.type("text/html").send(layout("errors", "Catálogo de erros", body));
+    return reply.type("text/html").send(await withAlerts("errors", "Catálogo de erros", body));
   });
 
   app.get("/health", async () => ({ status: "ok" }));

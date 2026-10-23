@@ -198,4 +198,30 @@ test.describe.serial("Roteiro E2E da Ponte, com prints", () => {
     await expect(page.getByText("PONTE-VAL-001")).toBeVisible();
     await shot(page, "14-painel-catalogo-de-erros");
   });
+
+  test("v1.1: alerta de fila parada quando o worker não processa", async ({ page }) => {
+    const control = (path: string) => fetch(`http://127.0.0.1:4199${path}`);
+    await control("/pause"); // worker parado: nada é processado
+
+    const academia = await newDeal("Academia Corpo em Movimento", "67.890.123/0001-16", "Manutenção de equipamentos", "2.100,00");
+    await api("crm", `/v1/deals/${academia.id}/stage`, { method: "POST", body: { stage: "GANHO" } });
+    await waitEvent(academia.id, ["RECEIVED"]);
+
+    // Sem ruído de espera real: o job é marcado como vencido há 400 s (acima do limite de 300 s).
+    await control("/age?seconds=400");
+    await page.goto(`${URL.panel}/`);
+    const stalled = page.locator('[data-alert="QUEUE_STALLED"]');
+    await expect(stalled).toBeVisible();
+    await expect(stalled).toContainText("Fila parada");
+    await expect(stalled).toContainText("O worker está pausado");
+    await expect(page.locator('[data-alert="DEAD_LETTERS_PRESENT"]')).toBeVisible(); // o evento de CNPJ inválido continua na fila de falhas
+    await expect(page.locator(".stat", { hasText: "espera mais antiga" }).locator(".n")).toHaveText(/^40\d s$/); // ≈ 400 s
+    await shot(page, "16-painel-alerta-de-fila-parada");
+
+    // Com o worker de volta, o evento é processado e o alerta de fila parada some.
+    await control("/resume");
+    await waitEvent(academia.id, ["PROCESSED"]);
+    await page.reload();
+    await expect(page.locator('[data-alert="QUEUE_STALLED"]')).toHaveCount(0);
+  });
 });

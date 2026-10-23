@@ -1,6 +1,6 @@
 import { envInt, requireEnv } from "@ponte/shared";
 
-export const PONTE_VERSION = "1.0.0";
+export const PONTE_VERSION = "1.1.0";
 
 export interface PonteConfig {
   databaseUrl: string;
@@ -17,6 +17,8 @@ export interface PonteConfig {
   defaultPaymentTermDays: number;
   recon: { intervalSeconds: number; graceSeconds: number };
   worker: { enabled: boolean; concurrency: number; pollIntervalMs: number; lockTimeoutMs: number };
+  /** ADR-012: espera máxima de trabalho vencido antes de alertar (padrão 300 s, o limite de 5 minutos do RNF-01). */
+  alerts: { stallSeconds: number };
   /** Timeout de chamadas ao CRM e ao ERP (10 s, reunião 3). */
   httpTimeoutMs: number;
   logLevel?: string;
@@ -44,6 +46,7 @@ export function configFromEnv(): PonteConfig {
     defaultPaymentTermDays: 30,
     recon: { intervalSeconds: envInt("RECON_INTERVAL_SECONDS", 900), graceSeconds: envInt("RECON_GRACE_SECONDS", 120) },
     worker: { enabled: true, concurrency: envInt("WORKER_CONCURRENCY", 4), pollIntervalMs: envInt("WORKER_POLL_MS", 250), lockTimeoutMs: 120_000 },
+    alerts: { stallSeconds: envInt("QUEUE_STALL_SECONDS", 300) },
     httpTimeoutMs: envInt("HTTP_TIMEOUT_MS", 10_000),
     logLevel: process.env.LOG_LEVEL,
   };

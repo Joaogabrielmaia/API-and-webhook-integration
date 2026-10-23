@@ -53,9 +53,9 @@ export async function buildPonteApp(config: PonteConfig): Promise<PonteApp> {
     log: { info: (obj, msg) => app.log.info(obj, msg), error: (obj, msg) => app.log.error(obj, msg) },
   });
 
-  app.get("/health", async () => ({ status: "ok", version: PONTE_VERSION }));
+  app.get("/health", async () => ({ status: "ok", version: PONTE_VERSION, worker: worker.state }));
   await registerWebhookRoutes(app, { prisma, config });
-  await registerAdminRoutes(app, { prisma, config, queue, reconciler });
+  await registerAdminRoutes(app, { prisma, config, queue, reconciler, worker });
 
   let scheduler: NodeJS.Timeout | undefined;
   app.addHook("onReady", async () => {

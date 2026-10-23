@@ -107,6 +107,7 @@ export class Stack {
       erpWebhookSecret: KEYS.erpSecret,
       adminKey: KEYS.admin,
       conferenceThresholdCents: 5_000_000,
+      alerts: { stallSeconds: 300 },
       defaultPaymentTermDays: 30,
       httpTimeoutMs: 2000,
       logLevel: "silent",

@@ -15,9 +15,9 @@ O teste **fecha o servidor HTTP do ERP** no meio do lote (`stopErp()`), então a
 |---|---|
 | Negócios no lote | 20 |
 | Eventos já processados quando o ERP caiu | 4 |
-| Eventos em retentativa durante a queda | 10 |
-| Duração da queda | 2.210 ms |
-| Tempo do lote inteiro | 3.704 ms |
+| Eventos em retentativa durante a queda | 8 |
+| Duração da queda | 2.232 ms |
+| Tempo do lote inteiro | 3.780 ms |
 | Estado final dos 20 eventos | 20 `PROCESSED` |
 | Eventos que precisaram de mais de uma tentativa | 16 |
 | Maior número de tentativas de um evento | 6 |
@@ -51,4 +51,4 @@ O teste afirma, além do estado final: CNPJ único em todos os clientes, `extern
 - Não derruba o PostgreSQL nem a própria Ponte no meio de um evento. Para a Ponte, o caso do worker interrompido está coberto em escala menor em `retry-deadletter.test.ts` (job preso com bloqueio expirado).
 
 ## Os números variam de uma rodada para outra
-Este teste foi executado várias vezes durante o desenvolvimento. Em uma rodada anterior os valores foram 8 eventos em retentativa, queda de 2.486 ms e lote de 4.490 ms; na rodada registrada acima foram 10, 2.210 ms e 3.704 ms. O que **não** varia, e é o que o teste afirma, é o resultado final: 20 de 20 processados, 20 clientes, 20 pedidos, 20 cobranças e nenhuma duplicidade.
+Este teste rodou várias vezes durante o desenvolvimento. Em três gravações que anotei, o número de eventos em retentativa foi 8, 10 e 8; a duração da queda, de 2.210 a 2.486 ms; e o lote inteiro, de 3.704 a 4.490 ms. A tabela acima reflete a última gravação e é mantida igual ao JSON por `npm run docs:failure`. O que **não** varia, e é o que o teste afirma, é o resultado final: 20 de 20 processados, 20 clientes, 20 pedidos, 20 cobranças e nenhuma duplicidade.

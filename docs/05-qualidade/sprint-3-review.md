@@ -8,13 +8,13 @@
 |---|---|---|
 | Sincronização de volta (pagamento → CRM) | US-08 | `payment-sync.test.ts` (5): normal, conferência, duplicata, cobrança de fora, pagamento antes do vínculo |
 | Reconciliação agendada e manual | US-09 | `reconciliation.test.ts` (10): cinco tipos de divergência, carência, evento em voo, ERP fora durante a execução |
-| Painel de integração | US-11, US-10 | `apps/console`; 9 testes E2E; prints 06 a 14 |
+| Painel de integração | US-11, US-10 | `apps/console`; 9 testes E2E; prints 06 a 14 (o 16 é da v1.1) |
 | Catálogo de erros gerado da fonte do código | US-12 | [catalogo-de-erros.md](../04-contratos-de-api/catalogo-de-erros.md) (35 códigos) |
 | Scripts de demonstração | — | `npm run demo -- <cenário>`; saída real em [demo-cenarios.txt](resultados/demo-cenarios.txt) |
 | Prints e E2E | — | 15 prints em [../screenshots](../screenshots/) |
 
 ## Resultado real ao fim da sprint
-- Vitest: **177 testes, 21 arquivos, todos passando** (gravação final). E2E: **9 passaram**.
+- Vitest: **177 testes, 21 arquivos, todos passando** (gravação da v1.0.0). E2E: **9 passaram**.
 - Cenários de demonstração rodando contra os quatro serviços reais (processos separados, não em teste): ver [demo-cenarios.txt](resultados/demo-cenarios.txt).
 
 ## Problemas e decisões

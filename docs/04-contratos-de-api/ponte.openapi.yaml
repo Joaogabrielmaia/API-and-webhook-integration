@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Ponte — API de integração CRM ↔ ERP
-  version: 1.0.0
+  version: 1.1.0
   description: |
     API da Ponte. Dois grupos de rotas:
 
@@ -30,7 +30,8 @@ paths:
                 required: [status, version]
                 properties:
                   status: { type: string, enum: [ok] }
-                  version: { type: string, example: 1.0.0 }
+                  version: { type: string, example: 1.1.0 }
+                  worker: { $ref: '#/components/schemas/WorkerState' }
   /v1/webhooks/crm:
     post:
       summary: Recebe `deal.won` do CRM
@@ -164,6 +165,29 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Metrics' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /v1/admin/alerts:
+    get:
+      summary: Alertas operacionais calculados na hora (adicionado na 1.1.0; ADR-012)
+      description: |
+        `QUEUE_STALLED`: há trabalho vencido esperando há pelo menos `QUEUE_STALL_SECONDS` (padrão 300 s);
+        `critical` a partir de 3× o limite. Retentativa agendada para o futuro **não** conta.
+        `DEAD_LETTERS_PRESENT`: há eventos na fila de falhas.
+        O conjunto de códigos é extensível; consumidores devem tolerar valores novos.
+      security: [ { AdminKey: [] } ]
+      responses:
+        '200':
+          description: Alertas vigentes (lista vazia quando tudo está em dia)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, generatedAt]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Alert' }
+                  generatedAt: { type: string, format: date-time }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /v1/admin/mapping:
     get:
@@ -465,6 +489,29 @@ components:
         maxDurationMs: { type: integer, nullable: true }
         openDivergences: { type: integer }
         lastEventAt: { type: string, format: date-time, nullable: true }
+        oldestPendingAgeSeconds:
+          type: integer
+          nullable: true
+          description: Idade, em segundos, do trabalho vencido mais antigo; nulo quando não há (adicionado na 1.1.0).
+    WorkerState:
+      type: object
+      required: [running, paused, lastTickAt]
+      properties:
+        running: { type: boolean }
+        paused: { type: boolean }
+        lastTickAt: { type: string, format: date-time, nullable: true }
+    Alert:
+      type: object
+      required: [code, severity, message, details]
+      properties:
+        code:
+          type: string
+          description: Conjunto extensível.
+          enum: [QUEUE_STALLED, DEAD_LETTERS_PRESENT]
+        severity: { type: string, enum: [warning, critical] }
+        message: { type: string }
+        since: { type: string, format: date-time, nullable: true }
+        details: { type: object, additionalProperties: true }
     MappingRule:
       type: object
       required: [target, source, transform]
