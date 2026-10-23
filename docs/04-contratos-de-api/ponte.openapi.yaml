@@ -221,6 +221,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ReconciliationRun' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+        '504': { $ref: '#/components/responses/BadGateway' }
   /v1/admin/divergences:
     get:
       summary: Lista divergências
@@ -262,6 +264,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+        '504': { $ref: '#/components/responses/BadGateway' }
   /v1/admin/errors:
     get:
       summary: Catálogo de erros (mesma fonte do código)
@@ -329,6 +333,11 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
     NotFound:
       description: Recurso não encontrado (`PONTE-ADM-002`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    BadGateway:
+      description: CRM ou ERP indisponível durante a operação (`PONTE-ERP-001`, `PONTE-ERP-003`, `PONTE-CRM-001`...). Nada foi alterado.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

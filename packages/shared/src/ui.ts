@@ -50,6 +50,7 @@ const css = (accent: string): string => `
 :root{--accent:${accent};--bg:#f6f7f9;--card:#fff;--ink:#1f2933;--muted:#6b7280;--line:#e5e7eb;--ok:#047857;--ok-bg:#d1fae5;--warn:#92400e;--warn-bg:#fef3c7;--danger:#b91c1c;--danger-bg:#fee2e2;--info:#1d4ed8;--info-bg:#dbeafe}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 header{background:var(--card);border-bottom:3px solid var(--accent);padding:14px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
 header .brand{font-weight:700;font-size:18px;color:var(--accent)}
 header nav{display:flex;gap:6px;flex-wrap:wrap}
@@ -79,6 +80,7 @@ tr:last-child td{border-bottom:0}
 .badge-ok{background:var(--ok-bg);color:var(--ok)}.badge-warn{background:var(--warn-bg);color:var(--warn)}
 .badge-danger{background:var(--danger-bg);color:var(--danger)}.badge-info{background:var(--info-bg);color:var(--info)}
 .badge-muted{background:#e5e7eb;color:#374151}
+code{white-space:nowrap}
 code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
 .muted{color:var(--muted)}
 .empty{color:var(--muted);padding:14px 4px}
