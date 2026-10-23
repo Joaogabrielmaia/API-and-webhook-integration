@@ -6,7 +6,7 @@
 CRM e ERP têm campos e formatos diferentes ([mapa de dados](../../01-discovery/07-mapa-de-dados.md)). Eles mudam: um campo novo, um formato novo.
 
 ## Alternativas
-1. **Fixo no código.** Simples e testável, mas cada ajuste vira deploy.
+1. **Fixo no código.** Simples e testável, mas cada ajuste exige uma nova versão do código.
 2. **Regras em dados com transformações de uma lista permitida** (esta).
 3. **Linguagem de expressões ou JavaScript guardado no banco.** Flexível, mas é execução de código arbitrário vinda de configuração.
 4. Ferramenta externa de mapeamento. Dependência nova.

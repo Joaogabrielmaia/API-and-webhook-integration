@@ -10,6 +10,7 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "npm run db:generate",
     "setup": "tsx scripts/setup-env.ts",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",

@@ -1,7 +1,7 @@
 /**
  * Sobe os quatro serviços com a política de retentativa de DEMONSTRAÇÃO (esperas de segundos, não de minutos),
  * para que os cenários `erp-fora` e `reprocessar` terminem em poucos segundos.
- * A política de produção do estudo (30 s a 30 min, 12 tentativas) está em .env.example e no ADR-004.
+ * A política padrão do estudo (30 s a 30 min, 12 tentativas) está em .env.example e no ADR-004.
  */
 import { spawn } from "node:child_process";
 import { findRepoRoot } from "@ponte/shared";

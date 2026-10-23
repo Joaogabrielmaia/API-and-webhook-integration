@@ -32,4 +32,4 @@ Em falha longa, o evento só é reavaliado a cada 30 min no fim; isso é aceitá
 ## Quando eu mudaria de ideia
 - Se a janela de indisponibilidade aumentasse, eu aumentaria `RETRY_MAX_ATTEMPTS` e não o teto.
 - Se o ERP tivesse cabeçalho `Retry-After`, a Ponte o respeitaria.
-- Nos testes e nas demonstrações, uso `base` de dezenas de milissegundos para ver a sequência em segundos; a política de produção do estudo é a da tabela.
+- Nos testes e nas demonstrações, uso `base` de dezenas de milissegundos para ver a sequência em segundos; a política padrão do estudo é a da tabela.

@@ -63,14 +63,14 @@ npm run test:record  # roda tudo e grava a saída em docs/05-qualidade/resultado
 | RF-12/RN-11 reconciliação | `reconciliation.test.ts` (10) |
 | RF-14/RN-07 fora de ordem | `out-of-order.test.ts` |
 | RNF-02 durabilidade | `erp-down-batch.test.ts`: recebidos = soma dos estados finais |
-| RNF-03 resiliência | `backoff.test.ts` (janela de 3 h 01 min na política de produção), `erp-down-batch.test.ts` |
+| RNF-03 resiliência | `backoff.test.ts` (janela de 3 h 01 min na política padrão), `erp-down-batch.test.ts` |
 | RNF-06 contratos | `*.contract.test.ts` |
 | ADR-002 fila | `queue.test.ts`: `SKIP LOCKED` nunca entrega o mesmo job a dois workers |
 | ADR-012 alerta de fila parada (v1.1) | `alerts.test.ts` (unitário, 8) e `tests/integration/alerts.test.ts` (8) |
 
 ## O que eu **não** testei (limites declarados)
 - **Carga e desempenho.** Não há teste de carga. O tempo de 122 a 465 ms do ganho até `PROCESSED` (54 ms para o evento de pagamento), visto nas execuções locais, vale para este ambiente e nenhum outro. Não afirmo capacidade.
-- **A janela real de 2 horas.** A política de produção (30 s a 30 min, 12 tentativas) é verificada por **cálculo** (`backoff.test.ts`), não por esperar 3 horas. Os testes de comportamento usam esperas de dezenas de milissegundos com a mesma fórmula.
+- **A janela real de 2 horas.** A política padrão (30 s a 30 min, 12 tentativas) é verificada por **cálculo** (`backoff.test.ts`), não por esperar 3 horas. Os testes de comportamento usam esperas de dezenas de milissegundos com a mesma fórmula.
 - **Segurança além do HMAC.** Não há teste de canal lateral de tempo, nem pentest. A comparação usa `timingSafeEqual`, mas isso não foi medido.
 - **Vários processos da Ponte ao mesmo tempo.** O `SKIP LOCKED` está provado no nível da fila (`queue.test.ts`); não rodei dois processos completos disputando eventos.
 - **Usuários reais.** As reuniões foram simuladas, então a aceitação também foi. Ver [reuniao-de-aceitacao.md](reuniao-de-aceitacao.md).

@@ -25,7 +25,7 @@ describe("computeBackoffMs (ADR-004)", () => {
     expect(computeBackoffMs(0, noJitter)).toBe(30_000);
   });
 
-  it("a janela da política de produção (12 tentativas) cobre as 2 h de indisponibilidade do ERP (RNF-03)", () => {
+  it("a janela da política padrão (12 tentativas) cobre as 2 h de indisponibilidade do ERP (RNF-03)", () => {
     // 11 esperas: 30+60+120+240+480+960 + 5×1800 = 10.890 s
     expect(totalBackoffMs(12, prod)).toBe(10_890_000);
     const worstCaseWithJitter = totalBackoffMs(12, prod) * 0.8;

@@ -18,7 +18,7 @@
 ## Resultado real ao fim da sprint
 - 28 testes novos de integração (idempotência, segurança, retentativa) passaram, mais 6 de fora de ordem e mapeamento.
 - **Falha injetada, cenário A:** 20 de 20 processados, 16 com retentativa, 0 duplicidade. **Cenário B:** 5 de 5 na fila de falhas, 5 de 5 reprocessados, 0 duplicidade.
-- Backoff por cálculo: a política de produção cobre **3 h 01 min** sem jitter e **2 h 25 min** no pior caso do jitter, acima da janela de 2 h do ERP.
+- Backoff por cálculo: a política padrão cobre **3 h 01 min** sem jitter e **2 h 25 min** no pior caso do jitter, acima da janela de 2 h do ERP.
 
 ## Problemas e decisões
 - Dois testes meus estavam errados e foram corrigidos (itens 8 e 9 de [bugs-e-aprendizados.md](bugs-e-aprendizados.md)): pilhas vivas disputando o mesmo banco, e erro de dado virando 500.

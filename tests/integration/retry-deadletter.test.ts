@@ -3,7 +3,7 @@ import { Stack, waitFor } from "../helpers/stack";
 
 let stack: Stack;
 
-// Política de teste: 5 tentativas; esperas 40, 80, 160, 320 ms (sem jitter), mesma fórmula da política de produção (ADR-004).
+// Política de teste: 5 tentativas; esperas 40, 80, 160, 320 ms (sem jitter), mesma fórmula da política padrão (ADR-004).
 beforeAll(async () => {
   stack = await Stack.start({ ponte: { httpTimeoutMs: 500, retry: { maxAttempts: 5, baseMs: 40, capMs: 320, jitterRatio: 0 } } });
 });

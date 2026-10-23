@@ -47,7 +47,7 @@ O teste afirma, além do estado final: CNPJ único em todos os clientes, `extern
 
 ## Limites deste teste
 - Mede **comportamento e correção**, não desempenho. Os tempos acima são de uma máquina local, com os três serviços no mesmo processo; não representam produção.
-- A política usada é uma versão reduzida da de produção. A janela real (≈ 3 h) está validada só por cálculo.
+- A política usada é uma versão reduzida da política padrão. A janela real (≈ 3 h) está validada só por cálculo.
 - Não derruba o PostgreSQL nem a própria Ponte no meio de um evento. Para a Ponte, o caso do worker interrompido está coberto em escala menor em `retry-deadletter.test.ts` (job preso com bloqueio expirado).
 
 ## Os números variam de uma rodada para outra
