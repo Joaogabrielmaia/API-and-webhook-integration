@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ERP_DATABASE_URL")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  taxId     String   @unique
+  name      String
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  externalRef String    @unique
+  description String
+  totalCents  Int
+  status      String    @default("ABERTO")
+  createdAt   DateTime  @default(now())
+  invoices    Invoice[]
+}
+
+model Invoice {
+  id          String    @id @default(uuid())
+  orderId     String
+  order       Order     @relation(fields: [orderId], references: [id])
+  externalRef String    @unique
+  amountCents Int
+  /// AAAA-MM-DD
+  dueDate     String
+  status      String    @default("ABERTA")
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+  deliveries  WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id         String   @id @default(uuid())
+  eventId    String   @unique
+  invoiceId  String
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id])
+  payload    Json
+  status     String   @default("FAILED")
+  httpStatus Int?
+  attempts   Int      @default(0)
+  lastError  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
