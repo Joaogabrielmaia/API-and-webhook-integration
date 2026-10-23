@@ -8,9 +8,9 @@
   },
   "totalDeNegocios": 20,
   "processadosAntesDaQueda": 4,
-  "eventosEmRetentativaDuranteAQueda": 8,
-  "duracaoDaQuedaMs": 2486,
-  "tempoTotalDoLoteMs": 4490,
+  "eventosEmRetentativaDuranteAQueda": 11,
+  "duracaoDaQuedaMs": 2281,
+  "tempoTotalDoLoteMs": 3849,
   "eventosPorStatusFinal": {
     "PROCESSED": 20
   },

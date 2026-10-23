@@ -196,6 +196,14 @@ describe("Contrato da Ponte (ponte.openapi.yaml)", () => {
     const resolveMissing = await stack.admin(`/divergences/${randomUUID()}/resolve`, { method: "POST" });
     expect(resolveMissing.status).toBe(404);
     ponte.check("/v1/admin/divergences/{id}/resolve", "post", resolveMissing);
+
+    // ERP fora: a reconciliação responde 502 documentado e não altera nada
+    stack.erp.chaos.mode = "down";
+    const badGateway = await stack.admin("/reconciliation/run", { method: "POST" });
+    stack.erp.chaos.mode = "none";
+    expect(badGateway.status).toBe(502);
+    expect(badGateway.body.error.code).toBe("PONTE-ERP-001");
+    ponte.check("/v1/admin/reconciliation/run", "post", badGateway);
   });
 
   it("catálogo de erros publicado pela API é o mesmo do código", async () => {

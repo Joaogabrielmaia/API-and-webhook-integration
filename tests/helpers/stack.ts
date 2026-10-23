@@ -5,15 +5,9 @@ import { buildErpApp, type ErpApp, type ErpConfig } from "@ponte/mock-erp";
 import { buildPonteApp, ensureDefaultMapping, type PonteApp, type PonteConfig } from "@ponte/integration";
 import { cnpjFromBase, formatCnpj, loadRootEnv, signPayload } from "@ponte/shared";
 import { APPS, testDatabaseUrl } from "../setup/db";
+import { KEYS } from "./keys";
 
-// Constantes de teste: não são segredos, existem só dentro desta suíte.
-export const KEYS = {
-  crmApi: "test-crm-api-key",
-  erpApi: "test-erp-api-key",
-  admin: "test-admin-key",
-  crmSecret: "test-crm-webhook-secret",
-  erpSecret: "test-erp-webhook-secret",
-} as const;
+export { KEYS };
 
 async function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -54,6 +48,8 @@ async function call(base: string, path: string, init: RequestInit = {}): Promise
 }
 
 export interface StackOptions {
+  /** Portas fixas (E2E). Sem isso, portas livres são sorteadas. */
+  ports?: { crm: number; erp: number; ponte: number };
   ponte?: Partial<Omit<PonteConfig, "retry" | "worker" | "recon">> & {
     retry?: Partial<PonteConfig["retry"]>;
     worker?: Partial<PonteConfig["worker"]>;
@@ -92,7 +88,7 @@ export class Stack {
     loadRootEnv();
     const suffix = process.env.TEST_DB_SUFFIX ?? "integration";
     const stack = new Stack();
-    const [crmPort, erpPort, pontePort] = [await freePort(), await freePort(), await freePort()];
+    const [crmPort, erpPort, pontePort] = options.ports ? [options.ports.crm, options.ports.erp, options.ports.ponte] : [await freePort(), await freePort(), await freePort()];
     stack.ports = { crm: crmPort, erp: erpPort, ponte: pontePort };
     stack.urls = { crm: `http://127.0.0.1:${crmPort}`, erp: `http://127.0.0.1:${erpPort}`, ponte: `http://127.0.0.1:${pontePort}` };
     const url = (envVar: string, db: string) => testDatabaseUrl(envVar, db, suffix);
