@@ -1,0 +1,44 @@
+Execução registrada em 2026-10-23T20:27:08.863Z
+Commit: 76c6b79
+Node v24.14.0 · win32
+
+$ npx vitest run
+ ✓ |unit| apps/integration/src/queue/backoff.test.ts (5 tests) 10ms
+ ✓ |unit| packages/shared/src/errors.test.ts (5 tests) 16ms
+ ✓ |unit| apps/integration/src/rules.test.ts (6 tests) 9ms
+ ✓ |unit| packages/shared/src/hmac.test.ts (15 tests) 14ms
+ ✓ |unit| packages/shared/src/cnpj.test.ts (4 tests) 12ms
+ ✓ |unit| apps/integration/src/mapping/transforms.test.ts (48 tests) 112ms
+ ✓ |unit| apps/integration/src/mapping/mapping.test.ts (13 tests) 85ms
+ ✓ |unit| apps/console/src/app.test.ts (2 tests) 43ms
+ ✓ |contract| tests/contract/ponte.contract.test.ts (8 tests) 1906ms
+ ✓ |contract| tests/contract/erp.contract.test.ts (5 tests) 990ms
+ ✓ |contract| tests/contract/crm.contract.test.ts (5 tests) 828ms
+ ✓ |integration| tests/integration/reconciliation.test.ts (10 tests) 6188ms
+ ✓ |integration| tests/integration/retry-deadletter.test.ts (10 tests) 6198ms
+ ✓ |integration| tests/integration/payment-sync.test.ts (5 tests) 3126ms
+ ✓ |integration| tests/integration/happy-path.test.ts (5 tests) 2764ms
+ ✓ |integration| tests/integration/webhook-security.test.ts (13 tests) 3028ms
+ ✓ |integration| tests/integration/idempotency.test.ts (5 tests) 2469ms
+ ✓ |integration| tests/integration/mapping.test.ts (4 tests) 1537ms
+ ✓ |integration| tests/integration/out-of-order.test.ts (2 tests) 1045ms
+ ✓ |failure| tests/failure/erp-down-batch.test.ts (2 tests) 6050ms
+ Test Files  20 passed (20)
+      Tests  172 passed (172)
+   Start at  17:27:10
+   Duration  71.35s (transform 1.65s, setup 0ms, collect 4.54s, tests 36.43s, environment 4ms, prepare 2.78s)
+(código de saída 0; 73.5 s)
+
+$ npx playwright test
+  ✓  1 e2e\console.spec.ts:50:3 › Roteiro E2E da Ponte, com prints › CRM: marcar o negócio como Ganho pela tela e ver os IDs do ERP voltarem (2.4s)
+  ✓  2 e2e\console.spec.ts:79:3 › Roteiro E2E da Ponte, com prints › ERP: cobranças, pedidos e clientes criados pela Ponte (533ms)
+  ✓  3 e2e\console.spec.ts:97:3 › Roteiro E2E da Ponte, com prints › Pagamento: dar baixa na cobrança no ERP e ver o CRM atualizado (518ms)
+  ✓  4 e2e\console.spec.ts:110:3 › Roteiro E2E da Ponte, com prints › Painel: visão geral da integração (403ms)
+  ✓  5 e2e\console.spec.ts:117:3 › Roteiro E2E da Ponte, com prints › ERP fora: evento em retentativa com backoff (982ms)
+  ✓  6 e2e\console.spec.ts:140:3 › Roteiro E2E da Ponte, com prints › Fila de falhas: erro de dado e esgotamento de tentativas (7.2s)
+  ✓  7 e2e\console.spec.ts:155:3 › Roteiro E2E da Ponte, com prints › Reprocessamento manual depois que o ERP volta (994ms)
+  ✓  8 e2e\console.spec.ts:176:3 › Roteiro E2E da Ponte, com prints › Reconciliação: divergências entre CRM e ERP (460ms)
+  ✓  9 e2e\console.spec.ts:189:3 › Roteiro E2E da Ponte, com prints › Painel: mapeamento de campos e catálogo de erros (672ms)
+  9 passed (29.1s)
+(código de saída 0; 31.4 s)
+
