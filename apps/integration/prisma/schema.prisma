@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PONTE_DATABASE_URL")
+}
+
+/// Todo evento aceito pela Ponte. `idempotencyKey` único garante RF-03.
+model Event {
+  id              String    @id @default(uuid())
+  source          String
+  type            String
+  idempotencyKey  String    @unique
+  entityId        String?
+  entityVersion   Int?
+  payload         Json
+  status          String    @default("RECEIVED")
+  attempts        Int       @default(0)
+  duplicateCount  Int       @default(0)
+  receivedAt      DateTime  @default(now())
+  processedAt     DateTime?
+  durationMs      Int?
+  lastErrorCode   String?
+  lastErrorMessage String?
+  ignoreReason    String?
+  nextRunAt       DateTime?
+  correlationId   String?
+  job             Job?
+  attemptLog      Attempt[]
+
+  @@index([status])
+  @@index([entityId])
+  @@index([receivedAt])
+}
+
+/// Fila de trabalhos em PostgreSQL (ADR-002). Um job por evento.
+model Job {
+  id          String    @id @default(uuid())
+  eventId     String    @unique
+  event       Event     @relation(fields: [eventId], references: [id])
+  state       String    @default("PENDING")
+  attempts    Int       @default(0)
+  maxAttempts Int
+  runAt       DateTime  @default(now())
+  lockedAt    DateTime?
+  lockedBy    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([state, runAt])
+}
+
+model Attempt {
+  id           String    @id @default(uuid())
+  eventId      String
+  event        Event     @relation(fields: [eventId], references: [id])
+  number       Int
+  outcome      String
+  errorCode    String?
+  errorMessage String?
+  startedAt    DateTime
+  durationMs   Int
+  nextRunAt    DateTime?
+
+  @@index([eventId])
+}
+
+model CustomerLink {
+  id            String   @id @default(uuid())
+  crmCustomerId String   @unique
+  erpCustomerId String
+  /// Não é único: dois clientes do CRM com o mesmo CNPJ apontam para o mesmo cliente do ERP.
+  taxId         String
+  createdAt     DateTime @default(now())
+
+  @@index([taxId])
+}
+
+model DealLink {
+  id            String    @id @default(uuid())
+  crmDealId     String    @unique
+  crmCustomerId String
+  erpCustomerId String?
+  erpOrderId    String?
+  erpInvoiceId  String?
+  amountCents   Int
+  lastVersion   Int
+  invoiceStatus String?
+  crmNotified   Boolean   @default(false)
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([erpInvoiceId])
+}
+
+model MappingConfig {
+  id        String   @id @default(uuid())
+  version   Int      @unique
+  active    Boolean  @default(false)
+  rules     Json
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model ReconciliationRun {
+  id                  String       @id @default(uuid())
+  trigger             String
+  startedAt           DateTime     @default(now())
+  finishedAt          DateTime?
+  dealsChecked        Int          @default(0)
+  divergencesOpen     Int          @default(0)
+  divergencesResolved Int          @default(0)
+  divergences         Divergence[]
+}
+
+model Divergence {
+  id          String            @id @default(uuid())
+  key         String            @unique
+  type        String
+  crmDealId   String?
+  detail      Json
+  status      String            @default("OPEN")
+  firstSeenAt DateTime          @default(now())
+  lastSeenAt  DateTime          @default(now())
+  resolvedAt  DateTime?
+  lastRunId   String?
+  run         ReconciliationRun? @relation(fields: [lastRunId], references: [id])
+
+  @@index([status])
+}
