@@ -11,7 +11,7 @@ O repositório não será publicado em servidor; tudo roda local e as provas sã
 3. Instalar PostgreSQL na máquina. Pouco reprodutível.
 
 ## Escolha
-Opção 2. Um PostgreSQL com três bancos (`crm`, `erp`, `ponte`) e três de teste (`*_test`), criados por um script de inicialização. Porta `5440` para não colidir com outros PostgreSQL locais.
+Opção 2. Um PostgreSQL com três bancos (`crm`, `erp`, `ponte`) e três de teste (`*_test`), criados por um script de inicialização. Porta `5452` para não colidir com outros PostgreSQL locais.
 
 ## Motivo
 - Ciclo de desenvolvimento rápido (`tsx watch`).

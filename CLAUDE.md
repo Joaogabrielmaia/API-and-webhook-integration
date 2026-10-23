@@ -24,7 +24,7 @@ Ponte é um serviço de integração entre um CRM e um ERP. Quando um negócio �
 - `apps/mock-crm` (porta 4001), `apps/mock-erp` (4002), `apps/integration` (4000, o produto), `apps/console` (4003, painel).
 - `packages/shared`: HMAC, catálogo de erros, CNPJ, schemas de evento.
 - `tests/`: Vitest (unit nos apps; integração, contrato e falha injetada aqui). `e2e/`: Playwright (também gera os prints).
-- Postgres via `docker compose up -d` (porta 5440).
+- Postgres via `docker compose up -d` (porta 5452).
 
 ## Comandos
 `npm run setup` · `npm run db:up` · `npm run db:migrate` · `npm run dev` · `npm test` · `npm run test:e2e` · `npm run demo -- <cenário>`

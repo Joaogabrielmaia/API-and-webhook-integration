@@ -16,7 +16,7 @@ flowchart LR
         REC[Reconciliação<br/>agendada]
     end
     CON[console :4003<br/>painel]
-    DB[(PostgreSQL :5440<br/>bancos crm, erp, ponte)]
+    DB[(PostgreSQL :5452<br/>bancos crm, erp, ponte)]
 
     CRM -- "deal.won (HMAC)" --> API
     ERP -- "invoice.paid (HMAC)" --> API

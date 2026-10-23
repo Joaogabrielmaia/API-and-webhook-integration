@@ -45,7 +45,7 @@ erDiagram
     CustomerLink {
         string crmCustomerId UK
         string erpCustomerId
-        string taxId UK
+        string taxId
     }
     DealLink {
         string crmDealId UK
@@ -92,7 +92,7 @@ erDiagram
 |---|---|
 | Evento não é processado duas vezes (RF-03) | `Event.idempotencyKey` único; inserção concorrente cai em violação de unicidade, tratada como duplicata |
 | Um negócio, um pedido (RN-03) | `DealLink.crmDealId` único |
-| Um cliente por CNPJ (RN-02) | `CustomerLink.taxId` único (e `taxId` único no ERP) |
+| Um cliente por CNPJ (RN-02) | `taxId` único no ERP; `CustomerLink.crmCustomerId` único (vários clientes do CRM com o mesmo CNPJ apontam para o mesmo cliente do ERP) |
 | Um job por evento | `Job.eventId` único; o reprocessamento reinicia o mesmo job |
 | Uma divergência aberta por tipo e negócio | `Divergence.key` único; a reconciliação faz upsert |
 | Fila durável e atômica com o evento | `Event` e `Job` são inseridos na **mesma transação** |
