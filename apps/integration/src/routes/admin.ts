@@ -141,7 +141,12 @@ export async function registerAdminRoutes(app: FastifyInstance, deps: Deps): Pro
         const body = z.object({ rules: z.unknown(), note: z.string().optional() }).parse(req.body);
         const rules = validateMappingRules(body.rules);
         // Prova de fumaça: a nova versão precisa conseguir mapear um evento de exemplo válido.
-        applyMapping(rules, SAMPLE_DATA, { defaultPaymentTermDays: config.defaultPaymentTermDays });
+        try {
+          applyMapping(rules, SAMPLE_DATA, { defaultPaymentTermDays: config.defaultPaymentTermDays });
+        } catch (err) {
+          if (!(err instanceof AppError)) throw err;
+          throw new AppError("PONTE-MAP-001", `O mapeamento não consegue mapear o evento de exemplo: ${err.message}`, { cause: err.code });
+        }
         const created = await prisma.$transaction(async (tx) => {
           const max = await tx.mappingConfig.aggregate({ _max: { version: true } });
           await tx.mappingConfig.updateMany({ where: { active: true }, data: { active: false } });

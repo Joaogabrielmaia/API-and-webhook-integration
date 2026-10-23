@@ -1,0 +1,21 @@
+{
+  "cenario": "B: ERP fora além da janela de retentativa (4 tentativas), fila de falhas e reprocessamento manual",
+  "politicaDeRetentativa": {
+    "maxTentativas": 4,
+    "baseMs": 50,
+    "tetoMs": 200,
+    "jitter": 0
+  },
+  "totalDeNegocios": 5,
+  "eventosNaFilaDeFalhasAntesDoReprocessamento": 5,
+  "codigoDeErro": "PONTE-ERP-001",
+  "eventosProcessadosAposReprocessamento": 5,
+  "tentativasRegistradasNoTotal": 25,
+  "erp": {
+    "clientes": 5,
+    "pedidos": 5,
+    "cobrancas": 5
+  },
+  "duplicidades": 0,
+  "observacao": "Medido em ambiente local. Não representa desempenho em produção."
+}

@@ -30,8 +30,9 @@ const IN_FLIGHT = ["RECEIVED", "PROCESSING", "RETRYING"];
 export class Reconciler {
   constructor(private readonly deps: ReconcilerDeps) {}
 
-  async run(trigger: "SCHEDULED" | "MANUAL") {
-    const { prisma, crm, erp, graceSeconds } = this.deps;
+  async run(trigger: "SCHEDULED" | "MANUAL", options: { graceSeconds?: number } = {}) {
+    const { prisma, crm, erp } = this.deps;
+    const graceSeconds = options.graceSeconds ?? this.deps.graceSeconds;
     const startedAt = new Date();
 
     const [deals, orders, invoices] = await Promise.all([crm.listDeals("GANHO"), erp.listOrders(ORDER_REF_PREFIX), erp.listInvoices(ORDER_REF_PREFIX)]);

@@ -86,6 +86,7 @@ export class Stack {
   ports!: { crm: number; erp: number; ponte: number };
   private erpConfig!: ErpConfig;
   private crmConfig!: CrmConfig;
+  private ponteConfig!: PonteConfig;
 
   static async start(options: StackOptions = {}): Promise<Stack> {
     loadRootEnv();
@@ -119,6 +120,7 @@ export class Stack {
       recon: { intervalSeconds: 0, graceSeconds: 0, ...o.recon },
     };
 
+    stack.ponteConfig = ponteConfig;
     stack.erp = await buildErpApp(stack.erpConfig);
     stack.crm = await buildCrmApp(stack.crmConfig);
     stack.ponte = await buildPonteApp(ponteConfig);
@@ -225,6 +227,29 @@ export class Stack {
   async startErp(): Promise<void> {
     this.erp = await buildErpApp(this.erpConfig);
     await this.erp.app.listen({ port: this.ports.erp, host: "127.0.0.1" });
+  }
+
+  async stopPonte(): Promise<void> {
+    await this.ponte.app.close();
+  }
+  async startPonte(): Promise<void> {
+    this.ponte = await buildPonteApp(this.ponteConfig);
+    await this.ponte.app.listen({ port: this.ports.ponte, host: '127.0.0.1' });
+  }
+
+  /** Monta um evento deal.won válido a partir de um negócio real do CRM, com versão e valor à escolha. */
+  async buildDealWonEvent(dealId: string, over: { version?: number; value?: string; eventId?: string } = {}) {
+    const deal = await this.getDeal(dealId);
+    return {
+      id: over.eventId ?? randomUUID(),
+      type: 'deal.won',
+      version: '1',
+      occurredAt: new Date().toISOString(),
+      data: {
+        deal: { id: deal.id, title: deal.title, value: over.value ?? deal.value, paymentTermDays: deal.paymentTermDays, wonAt: deal.wonAt ?? new Date().toISOString(), version: over.version ?? deal.version },
+        customer: { id: deal.customer.id, name: deal.customer.name, cnpj: deal.customer.cnpj, phone: deal.customer.phone, email: deal.customer.email },
+      },
+    };
   }
 
   async stopCrm(): Promise<void> {

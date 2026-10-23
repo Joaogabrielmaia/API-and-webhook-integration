@@ -1,0 +1,26 @@
+{
+  "cenario": "A: ERP derrubado (servidor fechado) durante um lote de 20 negócios e religado depois de ~2 s",
+  "politicaDeRetentativa": {
+    "maxTentativas": 12,
+    "baseMs": 100,
+    "tetoMs": 800,
+    "jitter": 0.2
+  },
+  "totalDeNegocios": 20,
+  "processadosAntesDaQueda": 4,
+  "eventosEmRetentativaDuranteAQueda": 8,
+  "duracaoDaQuedaMs": 2486,
+  "tempoTotalDoLoteMs": 4490,
+  "eventosPorStatusFinal": {
+    "PROCESSED": 20
+  },
+  "eventosQuePrecisaramDeRetentativa": 16,
+  "maiorNumeroDeTentativas": 6,
+  "erp": {
+    "clientes": 20,
+    "pedidos": 20,
+    "cobrancas": 20
+  },
+  "duplicidades": 0,
+  "observacao": "Medido em ambiente local, com os três serviços no mesmo processo de teste. Não representa desempenho em produção."
+}
