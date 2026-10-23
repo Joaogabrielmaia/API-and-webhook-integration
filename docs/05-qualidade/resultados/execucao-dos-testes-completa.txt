@@ -4,7 +4,7 @@ Node v24.14.0 · win32
 
 $ npx vitest run
 (Vitest (unitário, integração, contrato e falha injetada); código de saída 0; 71.7 s)
-RUN  v2.1.9 C:/Users/Joaog/Downloads/API-and-webhook-integration
+RUN  v2.1.9 <repo>
 
  ✓ |unit| packages/shared/src/hmac.test.ts (15 tests) 11ms
  ✓ |unit| apps/integration/src/queue/backoff.test.ts (5 tests) 9ms

@@ -13,9 +13,11 @@ const out = join(root, "docs", "05-qualidade", "resultados");
 mkdirSync(out, { recursive: true });
 
 const noise = /FSTDEP|DEP0190|--trace-|^\[WebServer\] \{"level"/;
+/** Remove cores e mascara o diretório do repositório (caminho pessoal) com <repo>; o resto da saída fica como veio. */
+const rootVariants = [root, root.replace(/\\/g, "/")];
 const clean = (text: string): string =>
-  text
-    .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "")
+  rootVariants
+    .reduce((acc, variant) => acc.split(variant).join("<repo>"), text.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, ""))
     .split(/\r?\n/)
     .filter((line) => !noise.test(line))
     .join("\n");
