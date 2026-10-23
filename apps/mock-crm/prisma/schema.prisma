@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("CRM_DATABASE_URL")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  cnpj      String
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  deals     Deal[]
+}
+
+model Deal {
+  id              String            @id @default(uuid())
+  title           String
+  customerId      String
+  customer        Customer          @relation(fields: [customerId], references: [id])
+  stage           String            @default("LEAD")
+  /// Texto livre em pt-BR, de propósito (ver docs/01-discovery/07-mapa-de-dados.md)
+  value           String
+  paymentTermDays Int?
+  version         Int               @default(1)
+  wonAt           DateTime?
+  erpCustomerId   String?
+  erpOrderId      String?
+  erpInvoiceId    String?
+  billingStatus   String            @default("NAO_COBRADO")
+  paidAt          DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deliveries      WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id         String   @id @default(uuid())
+  eventId    String   @unique
+  dealId     String
+  deal       Deal     @relation(fields: [dealId], references: [id])
+  payload    Json
+  status     String   @default("FAILED")
+  httpStatus Int?
+  attempts   Int      @default(0)
+  lastError  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
