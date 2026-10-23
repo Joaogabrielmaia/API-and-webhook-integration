@@ -5,7 +5,10 @@
   "description": "Ponte: integração entre CRM e ERP com idempotência, retentativa, fila de falhas e reconciliação.",
   "license": "MIT",
   "type": "module",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "setup": "tsx scripts/setup-env.ts",
     "db:up": "docker compose up -d --wait",
@@ -21,7 +24,10 @@
     "test:failure": "vitest run --project failure",
     "test:e2e": "playwright test",
     "docs:errors": "tsx scripts/generate-error-catalog.ts",
-    "demo": "tsx scripts/demo.ts"
+    "dev:demo": "tsx scripts/dev-demo.ts",
+    "demo": "tsx scripts/demo.ts",
+    "test:record": "tsx scripts/record-test-run.ts",
+    "test:print": "playwright test --config playwright.print.config.ts"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",

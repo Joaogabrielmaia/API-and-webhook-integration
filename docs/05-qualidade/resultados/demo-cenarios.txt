@@ -1,0 +1,52 @@
+
+
+
+▶ Fluxo feliz: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM
+  Negócio criado no CRM (c7975695…), valor 12.500,50. Marcando como Ganho...
+  Evento PROCESSED em 465 ms, 1 tentativa(s).
+  ERP: 1 pedido(s), 1 cobrança(s) (R$ 12.500,50, vence 2026-11-22, ABERTA)
+  CRM: status da cobrança = ABERTA; pedido = e4b65715-26a3-45de-98bc-c003dc77998e; cobrança = 3a505f6a-437f-40fc-bf0e-0e93f07d26ae
+
+▶ Mesmo evento duas vezes: o segundo é ignorado
+  Reenvio 1 da mesma entrega: a Ponte respondeu HTTP 200 (200 = duplicata ignorada).
+  Reenvio 2 da mesma entrega: a Ponte respondeu HTTP 200 (200 = duplicata ignorada).
+  Duplicatas descartadas para este evento: 2.
+  ERP: 1 pedido(s), 1 cobrança(s) (R$ 12.500,50, vence 2026-11-22, ABERTA)
+
+▶ Dado inválido (CNPJ com dígito verificador errado): vai direto para a fila de falhas, sem retentativa
+  Evento DEAD com 1 tentativa: PONTE-VAL-001 — CNPJ inválido: "11.222.333/0001-99" (esperado 14 dígitos com dígito verificador válido).
+  Nada foi criado no ERP. Veja o painel: http://localhost:4003/dead-letters
+
+▶ ERP fora: retentativas com backoff e, esgotadas, fila de falhas
+  ERP derrubado (modo de falha: indisponível).
+  RECEIVED · tentativas: 0
+  RETRYING · tentativas: 1 · próxima em 17:20:23 · PONTE-ERP-001
+  RETRYING · tentativas: 2 · próxima em 17:20:25 · PONTE-ERP-001
+  RETRYING · tentativas: 3 · próxima em 17:20:27 · PONTE-ERP-001
+  RETRYING · tentativas: 4 · próxima em 17:20:31 · PONTE-ERP-001
+  DEAD · tentativas: 5 · PONTE-ERP-001
+  ERP restabelecido.
+  Evento na fila de falhas. Rode `npm run demo -- reprocessar` ou use o botão no painel.
+
+▶ Reprocessamento manual: do ERP fora até o evento concluído, sem duplicar
+  ERP derrubado (modo de falha: indisponível).
+  Evento DEAD após 5 tentativas (PONTE-ERP-001).
+  ERP restabelecido.
+  Reprocessamento pedido: HTTP 202 {"status":"requeued","eventId":"ff1c7b69-d5e1-4eef-8580-8d8a5a3c7c87"}
+  Evento PROCESSED (tentativa nº 6 no histórico).
+  ERP: 1 pedido(s), 1 cobrança(s) (R$ 12.500,50, vence 2026-11-22, ABERTA)
+  Exatamente um pedido: nada duplicado.
+  CRM: status da cobrança = ABERTA; pedido = 89232d5d-ca95-473d-b86f-5b26429a7d45; cobrança = 43ba455a-a865-49d9-ab9f-2f12349c83e2
+
+▶ Pagamento no ERP atualiza o CRM
+  ERP: 1 pedido(s), 1 cobrança(s) (R$ 3.200,00, vence 2026-11-22, ABERTA)
+  CRM: status da cobrança = ABERTA; pedido = 0e195453-a1bc-4653-a69c-034c0e898dee; cobrança = 2ac520c9-f256-4a81-95cd-b2dc0cb8226d
+  Baixa feita no ERP: HTTP 200. O ERP enviou o webhook invoice.paid.
+  CRM: status da cobrança = PAGO; pedido = 0e195453-a1bc-4653-a69c-034c0e898dee; cobrança = 2ac520c9-f256-4a81-95cd-b2dc0cb8226d
+
+▶ Reconciliação: divergência entre CRM e ERP
+  Alterando o valor do negócio no CRM depois do pedido já ter sido criado (R$ 1.000,00 → R$ 1.250,00).
+  Reconciliação: 7 negócio(s) ganho(s) verificado(s), 3 divergência(s) aberta(s).
+  AMOUNT_MISMATCH: CRM R$ 1.250,00 × ERP R$ 1.000,00
+  Veja no painel: http://localhost:4003/divergences
+
