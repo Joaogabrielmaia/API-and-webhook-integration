@@ -4,7 +4,7 @@
 
 O fio condutor é a restrição levantada na [reunião com o responsável de TI](01-discovery/05-reuniao-3-responsavel-de-ti.md): o ERP fica fora do ar das 23h à 1h e não reenvia webhook perdido. Ela muda o escopo, vira arquitetura (ADRs 001 a 006) e é provada no [teste de falha injetada](05-qualidade/falha-injetada.md).
 
-Voltar à [capa](../README.md). Termos técnicos: [glossário](GLOSSARIO.md).
+Voltar à [capa](../README.md). Termos técnicos: [glossário](GLOSSARIO.md). Relatório do ciclo de vida, do discovery à evolução: [docs/ciclo-de-vida](ciclo-de-vida/README.md).
 
 ## Episódios
 

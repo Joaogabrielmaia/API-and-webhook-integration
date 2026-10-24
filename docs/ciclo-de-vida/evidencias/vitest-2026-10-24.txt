@@ -1,0 +1,102 @@
+Execução em 2026-10-24T15:12:57Z
+Commit: e960fbd
+Node v24.14.0 · MINGW64_NT-10.0-26300
+
+$ npx vitest run
+
+ RUN  v2.1.9 <repo>
+
+ ✓ |unit| apps/integration/src/rules.test.ts (6 tests) 24ms
+ ✓ |unit| packages/shared/src/errors.test.ts (5 tests) 38ms
+ ✓ |unit| apps/integration/src/alerts.test.ts (8 tests) 26ms
+ ✓ |unit| apps/integration/src/queue/backoff.test.ts (5 tests) 41ms
+ ✓ |unit| packages/shared/src/cnpj.test.ts (4 tests) 28ms
+ ✓ |unit| packages/shared/src/hmac.test.ts (15 tests) 57ms
+ ✓ |unit| apps/integration/src/mapping/transforms.test.ts (48 tests) 169ms
+ ✓ |unit| apps/integration/src/mapping/mapping.test.ts (13 tests) 422ms
+ ✓ |unit| apps/console/src/app.test.ts (2 tests) 110ms
+ ✓ |contract| tests/contract/ponte.contract.test.ts (8 tests) 5655ms
+   ✓ Contrato da Ponte (ponte.openapi.yaml) > administração: eventos, detalhe, reprocessamento, métricas 906ms
+   ✓ Contrato da Ponte (ponte.openapi.yaml) > reconciliação, divergências e correção assistida 930ms
+ ✓ |contract| tests/contract/erp.contract.test.ts (5 tests) 1488ms
+   ✓ Contrato do ERP simples (erp.openapi.yaml) > pedidos e cobranças: criação idempotente por externalRef, conferência, liberação e pagamento 363ms
+ ✓ |contract| tests/contract/crm.contract.test.ts (5 tests) 1802ms
+   ✓ Contrato do CRM simples (crm.openapi.yaml) > negócios: ciclo completo, evento deal.won e vínculos do ERP 440ms
+ ✓ |integration| tests/integration/retry-deadletter.test.ts (10 tests) 12639ms
+   ✓ US-06: retentativa com backoff > ERP fora: tentativas registradas com espera crescente, depois fila de falhas; reprocessar conclui sem duplicar 2389ms
+   ✓ US-06: retentativa com backoff > ERP volta durante as tentativas: o evento termina PROCESSED sem duplicar nada 985ms
+   ✓ US-06: retentativa com backoff > ERP lento além do timeout é falha temporária (PONTE-ERP-003); o ERP termina de criar depois que a Ponte desistiu, e a retentativa não duplica 1465ms
+   ✓ US-07: fila de falhas e reprocessamento > dado inválido (CNPJ inválido): vai direto para DEAD, sem retentativa e sem tocar no ERP 1001ms
+   ✓ US-07: fila de falhas e reprocessamento > dado inválido (valor inválido): vai direto para DEAD, sem retentativa e sem tocar no ERP 774ms
+   ✓ US-07: fila de falhas e reprocessamento > dado inválido (prazo fora de 0 a 90 dias): vai direto para DEAD, sem retentativa e sem tocar no ERP 739ms
+   ✓ US-07: fila de falhas e reprocessamento > dado inválido (valor acima do limite de R$ 1.000.000,00): vai direto para DEAD, sem retentativa e sem tocar no ERP 967ms
+   ✓ US-07: fila de falhas e reprocessamento > reprocessar sem corrigir o dado volta a DEAD; corrigir no CRM e marcar Ganho de novo gera um novo evento que passa 1369ms
+   ✓ US-07: fila de falhas e reprocessamento > só evento em DEAD pode ser reprocessado (409 PONTE-ADM-001) 959ms
+   ✓ F7: worker interrompido no meio de um job > job RUNNING com bloqueio expirado é retomado; com bloqueio recente não é tocado 1442ms
+ ✓ |integration| tests/integration/reconciliation.test.ts (10 tests) 10968ms
+   ✓ US-09 / RF-12: reconciliação > quando tudo está em dia, não há divergências 1447ms
+   ✓ US-09 / RF-12: reconciliação > F6/F9: evento perdido (Ponte fora quando o CRM enviou) → NOT_SYNCED; reenviar a entrega resolve na execução seguinte 884ms
+   ✓ US-09 / RF-12: reconciliação > RN-11: carência — negócio ganho há pouco e sem vínculo só vira divergência depois da carência 925ms
+   ✓ US-09 / RF-12: reconciliação > RN-11: enquanto o evento está em voo (RECEIVED ou em retentativa) não é divergência, mesmo sem carência 1107ms
+   ✓ US-09 / RF-12: reconciliação > evento que foi para a fila de falhas aparece como NOT_SYNCED com o estado do evento 1119ms
+   ✓ US-09 / RF-12: reconciliação > F6: pagamento perdido (Ponte fora quando o ERP avisou) → BILLING_STATUS_MISMATCH; correção assistida atualiza o CRM 2009ms
+   ✓ US-09 / RF-12: reconciliação > RN-12: liberação de conferência no ERP não gera evento, e a reconciliação mostra a diferença de status 560ms
+   ✓ US-09 / RF-12: reconciliação > AMOUNT_MISMATCH, ORDER_MISSING_IN_ERP e CRM_LINK_MISSING são detectados, e a divergência corrigida é fechada sozinha 1457ms
+   ✓ US-09 / RF-12: reconciliação > ERP fora durante a execução: a reconciliação falha e NÃO fecha divergências existentes (não dá para afirmar o que não se viu) 828ms
+   ✓ US-09 / RF-12: reconciliação > a execução agendada usa o mesmo caminho da manual 506ms
+ ✓ |integration| tests/integration/payment-sync.test.ts (5 tests) 3848ms
+   ✓ US-08 / RF-10: cobrança paga no ERP atualiza o CRM > fluxo normal: baixa no ERP → webhook assinado → CRM com status PAGO e data 947ms
+   ✓ US-08 / RF-10: cobrança paga no ERP atualiza o CRM > RN-06: cobrança em conferência não pode ser paga; depois de liberada pelo financeiro, o pagamento chega ao CRM 507ms
+   ✓ US-08 / RF-10: cobrança paga no ERP atualiza o CRM > webhook de pagamento repetido (mesmo id) é duplicata; outro id para o mesmo pagamento é ignorado com PONTE-SYNC-004 723ms
+   ✓ US-08 / RF-10: cobrança paga no ERP atualiza o CRM > cobrança que não foi criada pela Ponte é ignorada com PONTE-SYNC-005 490ms
+   ✓ US-08 / RF-10: cobrança paga no ERP atualiza o CRM > F3: pagamento chega antes do vínculo → retentado (PONTE-SYNC-001) até o vínculo existir, e então atualiza o CRM 1097ms
+stdout | tests/integration/happy-path.test.ts > US-01..US-04: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM > fluxo feliz de ponta a ponta
+[RNF-01] tempo do ganho até PROCESSED em ambiente local: 154 ms
+
+ ✓ |integration| tests/integration/happy-path.test.ts (5 tests) 3752ms
+   ✓ US-01..US-04: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM > fluxo feliz de ponta a ponta 546ms
+   ✓ US-01..US-04: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM > RN-06: valor a partir de R$ 50.000,00 gera cobrança EM_CONFERENCIA 1043ms
+   ✓ US-01..US-04: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM > US-02 / RN-02: mesmo CNPJ com nome diferente não duplica o cliente nem altera a razão social; contato é atualizado 859ms
+   ✓ US-01..US-04: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM > US-02: dois negócios do mesmo CNPJ processados ao mesmo tempo resultam em um único cliente 561ms
+   ✓ US-01..US-04: negócio ganho → cliente, pedido e cobrança no ERP → IDs no CRM > F5: CRM fora no retorno → retentativa refaz só o retorno, sem recriar pedido nem cobrança 668ms
+ ✓ |integration| tests/integration/webhook-security.test.ts (13 tests) 4189ms
+   ✓ US-01 / ADR-009: segurança do webhook > evento com assinatura e timestamp válidos é aceito e gravado antes do 202 382ms
+   ✓ US-01 / ADR-009: segurança do webhook > assinatura calculada com segredo errado: 401 PONTE-AUTH-001 e nada gravado 387ms
+   ✓ US-01 / ADR-009: segurança do webhook > corpo adulterado depois de assinado: 401 355ms
+   ✓ US-01 / ADR-009: segurança do webhook > timestamp no limite acima (301 s): 401 PONTE-AUTH-002 325ms
+   ✓ US-01 / ADR-009: segurança do webhook > timestamp futuro distante: 401 PONTE-AUTH-002 364ms
+   ✓ US-01 / ADR-009: segurança do webhook > versão de evento desconhecida: 422 PONTE-REQ-002 e nada gravado 370ms
+   ✓ US-01 / ADR-009: segurança do webhook > rotas administrativas exigem X-Admin-Key (ausente ou errada: 401 PONTE-ADM-003) 318ms
+ ✓ |integration| tests/integration/alerts.test.ts (8 tests) 4746ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > com tudo em dia, não há alertas 1582ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > trabalho esperando além do limite: QUEUE_STALLED (warning), com o estado do worker 386ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > abaixo do limite não alerta; a partir de 3× o limite fica crítico 375ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > quando o worker volta e o trabalho é concluído, o alerta some 514ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > retentativa agendada para o futuro é backoff, não fila parada 331ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > job RUNNING recente não conta; com bloqueio expirado (worker morreu) conta como fila parada 337ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > eventos na fila de falhas geram DEAD_LETTERS_PRESENT e o alerta some depois do reprocessamento 800ms
+   ✓ v1.1 / ADR-012: alerta de fila parada > /health informa o estado do worker e a administração exige chave 319ms
+ ✓ |integration| tests/integration/idempotency.test.ts (5 tests) 2915ms
+   ✓ US-05 / RF-03: idempotência > o mesmo evento duas vezes: o segundo é ignorado e o ERP recebe um só pedido e uma só cobrança 580ms
+   ✓ US-05 / RF-03: idempotência > dez disparos simultâneos do mesmo evento: um 202, nove 200 e um único pedido 693ms
+   ✓ US-05 / RF-03: idempotência > reenvio da entrega pelo CRM usa o mesmo id de evento e vira duplicata 494ms
+   ✓ US-05 / RF-03: idempotência > replay de um evento válido dentro da janela de 5 minutos não reprocessa (a assinatura sozinha não impediria) 498ms
+   ✓ US-05 / RF-03: idempotência > RN-03: um novo 'Ganho' do mesmo negócio (outra chave) é ignorado com PONTE-SYNC-003 546ms
+ ✓ |integration| tests/integration/mapping.test.ts (4 tests) 1842ms
+   ✓ US-10 / ADR-008: mapeamento configurável e versionado > nova versão vale para os próximos eventos e a anterior fica no histórico 724ms
+   ✓ US-10 / ADR-008: mapeamento configurável e versionado > campo opcional tornado obrigatório na v2: eventos sem telefone passam a ir para a fila de falhas com PONTE-VAL-004 528ms
+ ✓ |integration| tests/integration/out-of-order.test.ts (2 tests) 1203ms
+   ✓ US-13 / RN-07: evento fora de ordem > versão 5 aceita antes de a versão 3 ser processada: a 3 é ignorada com PONTE-SYNC-002 e vale o valor da 5 569ms
+   ✓ US-13 / RN-07: evento fora de ordem > evento antigo processado primeiro e o 'Ganho' real chega depois: o novo é ignorado (RN-03) e a reconciliação aponta a diferença de valor 571ms
+ ✓ |integration| tests/integration/queue.test.ts (5 tests) 1978ms
+   ✓ ADR-002: fila em PostgreSQL com SKIP LOCKED > claims simultâneos de vários workers nunca entregam o mesmo job a dois deles 847ms
+ ✓ |failure| tests/failure/erp-down-batch.test.ts (2 tests) 6060ms
+   ✓ Falha injetada: ERP derrubado durante um lote de 20 negócios ganhos > cenário A: o ERP volta dentro da janela de retentativa; os 20 são processados e nada é duplicado 4452ms
+   ✓ Falha injetada: ERP derrubado durante um lote de 20 negócios ganhos > cenário B: o ERP fica fora além da janela; os 5 eventos vão à fila de falhas e o reprocessamento manual os conclui sem duplicar 1606ms
+
+ Test Files  23 passed (23)
+      Tests  193 passed (193)
+   Start at  12:13:01
+   Duration  156.53s (transform 12.28s, setup 0ms, collect 24.26s, tests 64.00s, environment 6ms, prepare 9.61s)
+
+(código de saída 0)
