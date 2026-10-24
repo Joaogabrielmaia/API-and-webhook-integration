@@ -31,7 +31,7 @@ Origem: reuniões simuladas ([1](../01-discovery/03-reuniao-1-gerente-comercial.
 | RNF-04 | **Segurança.** Segredos só em variáveis de ambiente; HMAC com janela de 5 min; comparação em tempo constante; rotas administrativas com chave. | Testes de segurança do webhook. |
 | RNF-05 | **Observabilidade.** Log estruturado com identificador de correlação; tempo de processamento e tentativas por evento. | Painel e tabela `Attempt`. |
 | RNF-06 | **Testabilidade de contrato.** Os três contratos OpenAPI são validados contra respostas reais. | Suíte `tests/contract`. |
-| RNF-07 | **Portabilidade local.** Sobe com Docker Compose (PostgreSQL) e `npm`. | README, seção "Como rodar". |
+| RNF-07 | **Portabilidade local.** Sobe com Docker Compose (PostgreSQL) e `npm`. | [CONTRIBUTING.md](../../CONTRIBUTING.md). |
 | RNF-08 | **Compatibilidade.** API versionada em `/v1`; mudanças dentro da versão são aditivas. | ADR-007 e testes de contrato. |
 | RNF-09 | **Consistência eventual.** CRM e ERP convergem; divergências são detectadas, não escondidas. | Reconciliação. |
 
