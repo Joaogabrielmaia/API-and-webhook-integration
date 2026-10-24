@@ -9,7 +9,7 @@ O roadmap é uma lista de decisões possíveis, não uma promessa. Cada item diz
 | 1 | **Evento de liberação de conferência** (melhoria 2 da [retrospectiva](retrospectiva.md)) | Hoje o CRM só aprende que a cobrança foi liberada pela reconciliação (RN-12) | Novo evento do ERP (`invoice.released`), novo tratador na Ponte, contrato do ERP `1.1.0`. Aditivo |
 | 2 | **Aceitar dois segredos de webhook** (melhoria 3) | Trocar o segredo hoje recusa eventos por alguns minutos | Verificação tenta o segredo novo e o antigo durante a troca ([ADR-009](../03-arquitetura/adr/ADR-009-seguranca-do-webhook.md)) |
 | 3 | **Notificação ativa de alertas** | O alerta de fila parada ([ADR-012](../03-arquitetura/adr/ADR-012-alerta-de-fila-parada.md)) depende de alguém olhar | Um consumidor de `GET /v1/admin/alerts` que envia a um canal (e-mail ou chat). Exige um segredo e um destino |
-| 4 | **Aviso ao vendedor** quando o evento vai para a fila de falhas | Pedido da aceitação | Escrever no CRM (campo de observação) o motivo da falha. Exige novo campo no CRM |
+| 4 | **Aviso ao vendedor** quando o evento vai para a fila de falhas (dead-letter) | Pedido da aceitação | Escrever no CRM (campo de observação) o motivo da falha. Exige novo campo no CRM |
 | 5 | **Edição do mapeamento pelo painel** | Hoje só pela API | Formulário com validação da Ponte; o histórico de versões já existe |
 | 6 | **Reconciliação incremental** | Compara tudo a cada ciclo | Cursor por data de alteração e execução completa uma vez ao dia ([ADR-006](../03-arquitetura/adr/ADR-006-reconciliacao.md)) |
 | 7 | **Janelas de silêncio** por horário no alerta | Durante o backup do ERP, retentativas são esperadas | Configuração de horários em que `DEAD_LETTERS_PRESENT` é rebaixado |

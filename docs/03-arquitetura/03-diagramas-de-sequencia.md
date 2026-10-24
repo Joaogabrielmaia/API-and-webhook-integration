@@ -50,7 +50,7 @@ sequenceDiagram
     P-->>CRM: 200 {status: duplicate}
 ```
 
-## 3. ERP fora: retentativas, fila de falhas e reprocessamento manual
+## 3. ERP fora: retentativas, fila de falhas (dead-letter) e reprocessamento manual
 
 ```mermaid
 sequenceDiagram

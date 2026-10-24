@@ -1,6 +1,6 @@
 # 03 — Reunião 1: gerente comercial
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 **Participantes:** Marcos Oliveira (gerente comercial da Serviços Aurora, fictício) e eu.
 **Objetivo:** entender o que o comercial espera da integração.
@@ -34,7 +34,7 @@
 | "Na hora" | Meta de latência: em condições normais, pedido e cobrança no ERP em até 5 minutos após o "Ganho" (RNF-01). Com o ERP fora, o evento fica guardado e processa quando ele voltar. |
 | "Tudo automático" | Cliente, pedido, cobrança e retorno de IDs ao CRM. Cancelamento, nota fiscal e alteração posterior **ficam de fora** do MVP. |
 | "Ver se pagou" | Campo "Status da cobrança" no negócio, atualizado quando o ERP registra o pagamento (RF-10). |
-| "Não pode perder a venda" | Nenhum evento recebido pode sumir: ou processa, ou fica visível numa fila de falhas (RNF-02). |
+| "Não pode perder a venda" | Nenhum evento recebido pode sumir: ou processa, ou fica visível numa fila de falhas (dead-letter) (RNF-02). |
 | "Corrige depois" (CNPJ) | **Em aberto**: conflita com a expectativa do financeiro. Ver [reunião 2](04-reuniao-2-analista-financeira.md). |
 
 ## Pontos de atenção que ficaram para as outras reuniões

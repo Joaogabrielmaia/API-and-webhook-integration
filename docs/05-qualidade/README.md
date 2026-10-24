@@ -7,7 +7,7 @@ Tudo o que está nesta pasta vem de execuções reais. Quando um número aparece
 | Camada | Ferramenta | Onde | O que prova |
 |---|---|---|---|
 | Unitário | Vitest | `apps/**/src/**/*.test.ts`, `packages/**/src/**/*.test.ts` | Funções puras: transformações (CNPJ, telefone, valor, prazo), motor de mapeamento, backoff, HMAC, regras de negócio, catálogo de erros |
-| Integração | Vitest + PostgreSQL | `tests/integration` | Os três serviços reais conversando entre si por HTTP, cada um com seu banco: fluxo feliz, idempotência, retentativa, fila de falhas, fora de ordem, pagamento, reconciliação, mapeamento, segurança, fila |
+| Integração | Vitest + PostgreSQL | `tests/integration` | Os três serviços reais conversando entre si por HTTP, cada um com seu banco: fluxo feliz, idempotência, retentativa, fila de falhas (dead-letter), fora de ordem, pagamento, reconciliação, mapeamento, segurança, fila |
 | Contrato | Vitest + OpenAPI | `tests/contract` | Respostas reais de CRM, ERP e Ponte validadas contra os `.openapi.yaml`; eventos emitidos validados contra o esquema do **produtor e do consumidor** |
 | Falha injetada | Vitest | `tests/failure` | ERP derrubado **de verdade** (servidor fechado) durante um lote |
 | E2E | Playwright | `e2e/` | Telas reais do CRM, do ERP e do painel dirigidas por navegador; também gera os prints |

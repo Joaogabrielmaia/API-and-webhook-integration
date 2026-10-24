@@ -1,6 +1,6 @@
 # 04 — Reunião 2: analista financeira
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 **Participantes:** Patrícia Souza (analista financeira da Serviços Aurora, fictícia) e eu.
 **Objetivo:** entender o que o financeiro precisa para confiar numa cobrança criada automaticamente.
@@ -46,7 +46,7 @@
 ## Como eu resolvi a contradição (decisão de escopo)
 
 **Contexto.** Os dois estão certos dentro do papel de cada um.
-**Alternativas.** (1) Tudo automático, sem conferência. (2) Tudo parado até o financeiro aprovar. (3) Automático para o caso comum, com regras explícitas de quando conferir e uma fila de falhas visível.
+**Alternativas.** (1) Tudo automático, sem conferência. (2) Tudo parado até o financeiro aprovar. (3) Automático para o caso comum, com regras explícitas de quando conferir e uma fila de falhas (dead-letter) visível.
 **Escolha.** Opção 3.
 **Motivo.** Preserva a rapidez no caso comum e dá ao financeiro o controle nos casos de risco.
 **Trade-off.** Mais regras para explicar e manter; o financeiro ainda confere as cobranças grandes.

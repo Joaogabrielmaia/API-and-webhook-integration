@@ -1,6 +1,6 @@
 # Reunião de aceitação (v1.0)
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 **Participantes:** Marcos Oliveira (gerente comercial), Patrícia Souza (analista financeira), Rogério Lima (responsável de TI), todos fictícios, e eu.
 **Formato:** eu apresento os cenários rodando de verdade e eles reagem. O que é **real** aqui é o que a Ponte fez e os números de teste citados; as **reações** das pessoas são simuladas.
@@ -12,7 +12,7 @@
 |---|---|---|---|
 | 1 | Vendedor marca **Ganho** no CRM ([print 01](../screenshots/01-crm-negocio-ganho.png)) | Cliente, pedido e cobrança no ERP; IDs e status de volta no CRM. Nas execuções locais, do ganho até `PROCESSED` levou de 122 a 465 ms (o evento de pagamento, 54 ms) | **Marcos:** "Era isso. Agora o vendedor não manda mensagem pra ninguém." |
 | 2 | Mesmo evento enviado 2 vezes | Duas respostas `200 duplicate`, um único pedido | **Patrícia:** "Esse era meu medo: cobrar duas vezes." |
-| 3 | CNPJ com dígito errado | `PONTE-VAL-001`, direto para a fila de falhas, nada criado no ERP ([print 10](../screenshots/10-painel-fila-de-falhas.png)) | **Patrícia:** "Gostei de ver o motivo e o que fazer. Mas o vendedor precisa ser avisado." (ver pendências) |
+| 3 | CNPJ com dígito errado | `PONTE-VAL-001`, direto para a fila de falhas (dead-letter), nada criado no ERP ([print 10](../screenshots/10-painel-fila-de-falhas.png)) | **Patrícia:** "Gostei de ver o motivo e o que fazer. Mas o vendedor precisa ser avisado." (ver pendências) |
 | 4 | ERP derrubado no meio de um lote de 20 ([falha injetada](falha-injetada.md)) | 20 de 20 processados, 0 duplicidade, 16 precisaram de retentativa | **Rogério:** "Essa é a janela do backup. Se funcionar com o ERP caindo de verdade, serve." |
 | 5 | ERP fora além das tentativas | 5 de 5 na fila de falhas, depois 5 de 5 reprocessados à mão | **Rogério:** "E se ninguém olhar a fila?" (ver pendências) |
 | 6 | Baixa no ERP ([print 05](../screenshots/05-crm-cobranca-paga.png)) | CRM mostra **Pago** | **Marcos:** "Meus vendedores vão parar de perguntar." |

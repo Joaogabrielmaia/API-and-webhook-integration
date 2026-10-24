@@ -1,6 +1,6 @@
 # Retrospectiva da v1.0
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 **Participantes:** Marcos Oliveira, Patrícia Souza e Rogério Lima (fictícios) e eu. Base: a [reunião de aceitação](../05-qualidade/reuniao-de-aceitacao.md), os [resultados de teste](../05-qualidade/README.md) e o [registro de problemas](../05-qualidade/bugs-e-aprendizados.md). As falas são simuladas; os fatos citados são do repositório.
 
@@ -22,7 +22,7 @@
 
 | # | Melhoria | Quem pediu | Decisão |
 |---|---|---|---|
-| 1 | **Alerta de fila parada** (e de fila de falhas com itens esperando) no painel e na API | Rogério | **Implementada na v1.1** |
+| 1 | **Alerta de fila parada** (e de fila de falhas (dead-letter) com itens esperando) no painel e na API | Rogério | **Implementada na v1.1** |
 | 2 | **Evento de liberação de conferência** do ERP, para o CRM não ficar desatualizado | Patrícia | [Roadmap](roadmap.md) |
 | 3 | **Aceitar dois segredos** de webhook durante a troca | Rogério | [Roadmap](roadmap.md) |
 

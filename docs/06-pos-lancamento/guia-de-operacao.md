@@ -6,7 +6,7 @@ Para quem acompanha a integração no dia a dia (no cenário fictício, a analis
 
 | Quando | O que olhar | Onde |
 |---|---|---|
-| No começo do dia | "Na fila de falhas" e "Divergências abertas" devem estar em zero, ou com motivo conhecido | Painel, **Visão geral** |
+| No começo do dia | "Na fila de falhas (dead-letter)" e "Divergências abertas" devem estar em zero, ou com motivo conhecido | Painel, **Visão geral** |
 | Depois de qualquer indisponibilidade do ERP | "Em retentativa" deve esvaziar sozinho; o que sobrar em "Fila de falhas" precisa de ação | Painel, **Eventos** e **Fila de falhas** |
 | Uma vez por semana, ou quando alguém reclamar | Rodar a reconciliação e ler a lista | Painel, **Divergências** |
 

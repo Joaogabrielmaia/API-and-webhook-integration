@@ -8,7 +8,7 @@ O ERP fica indisponível cerca de 2 horas por dia. Falhas temporárias precisam 
 ## Alternativas
 1. **Intervalo fixo** (ex.: a cada 30 s): simples, mas ou gasta muitas tentativas na janela, ou espera demais quando a falha é curta.
 2. **Backoff exponencial com teto e variação aleatória (jitter).**
-3. **Sem retentativa automática:** tudo vai à fila de falhas. Exige trabalho manual para qualquer soluço.
+3. **Sem retentativa automática:** tudo vai à fila de falhas (dead-letter). Exige trabalho manual para qualquer soluço.
 
 ## Escolha
 Opção 2:

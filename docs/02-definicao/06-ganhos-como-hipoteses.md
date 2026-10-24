@@ -1,6 +1,6 @@
 # 06 — Ganhos esperados (hipóteses, não medições)
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 Nenhum número abaixo foi medido. Todos vêm de **estimativas dadas na simulação** e de fórmulas que eu deixo visíveis para que qualquer pessoa troque as entradas.
 

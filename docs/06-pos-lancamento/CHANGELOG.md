@@ -19,7 +19,7 @@ Origem: [retrospectiva da v1.0](retrospectiva.md), melhoria 1. Decisão: [ADR-01
 - `PONTE_VERSION` é `1.1.0`.
 
 ### Testes
-- +8 unitários (`alerts.test.ts`: limites, severidade, mensagens) e +8 de integração (`tests/integration/alerts.test.ts`: fila saudável, parada, crítica, alerta que some, backoff futuro que não alerta, lock expirado, fila de falhas, `/health`).
+- +8 unitários (`alerts.test.ts`: limites, severidade, mensagens) e +8 de integração (`tests/integration/alerts.test.ts`: fila saudável, parada, crítica, alerta que some, backoff futuro que não alerta, lock expirado, fila de falhas (dead-letter), `/health`).
 - O teste de contrato passou a exercitar `/v1/admin/alerts` e o campo `worker` de `/health`; a cobertura de operações continua total (44 de 44).
 - Gravação completa: 193 testes Vitest passando (23 arquivos) e 10 E2E passando. Ver [resultados](../05-qualidade/README.md).
 

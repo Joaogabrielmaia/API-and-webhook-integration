@@ -38,7 +38,7 @@ Os pesos são julgamento meu, de 1 a 5, a partir do problema descrito.
 Total = soma de (nota × peso). Exemplo da A: 5×5 + 5×5 + 2×3 + 5×4 + 3×3 + 5×2 = 95.
 
 ## Escolha: A, integração por API
-**Motivo.** É a única que combina eliminação total da redigitação com controle fino de falhas (retentativa, fila de falhas, reconciliação). Ganha também sem o critério C6, então a escolha não é só vaidade de portfólio.
+**Motivo.** É a única que combina eliminação total da redigitação com controle fino de falhas (retentativa, fila de falhas (dead-letter), reconciliação). Ganha também sem o critério C6, então a escolha não é só vaidade de portfólio.
 
 **Trade-off.** É a mais cara de construir (nota 2 em C3) e exige alguém que saiba manter código.
 

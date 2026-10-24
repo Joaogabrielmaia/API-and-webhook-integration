@@ -22,7 +22,7 @@ Aqui "sprint" é um **marco de entrega**, não uma duração em semanas: o estud
 | Idempotência por chave de evento (inclusive em paralelo) | US-05 | RF-03 |
 | Fila de trabalhos em PostgreSQL com `SKIP LOCKED` | US-06 | RF-08, RNF-02 |
 | Retentativa com backoff e registro de tentativas | US-06 | RF-08, RNF-03 |
-| Fila de falhas e reprocessamento manual | US-07 | RF-09 |
+| Fila de falhas (dead-letter) e reprocessamento manual | US-07 | RF-09 |
 | Evento fora de ordem | US-13 | RF-14 |
 | Teste de falha injetada (ERP derrubado durante um lote) | US-06, US-07 | RNF-02, RNF-03 |
 
