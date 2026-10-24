@@ -226,10 +226,12 @@ Política de versão no [ADR-007](docs/03-arquitetura/adr/ADR-007-versionamento-
 
 [Guia da série e trilhas de leitura](docs/INDEX.md) · [Ciclo de vida](docs/ciclo-de-vida/README.md) · [Reuniões](docs/ciclo-de-vida/reunioes/README.md) · [Sprints](docs/ciclo-de-vida/sprints/README.md) · [Catálogo de diagramas](docs/ciclo-de-vida/diagramas/README.md) · [Galeria](docs/screenshots/README.md) · [Glossário](docs/GLOSSARIO.md) · [CHANGELOG](docs/06-pos-lancamento/CHANGELOG.md)
 
-## Licença
-
-[MIT](LICENSE). O código roda localmente; as instruções estão em [CONTRIBUTING.md](CONTRIBUTING.md).
-
 ## Nota de contexto acadêmico
 
-Este repositório é um estudo de caso. A Rota Fácil Software, as pessoas, os clientes e os dados são fictícios. Reuniões, atas, o cronograma das sprints e as cerimônias foram elaborados para compor o cenário de aprendizagem, com participantes identificados por papel; Houve uso de IA generativa (Claude, da Anthropic) na construção do cenário, incluindo a simulação das reuniões, e como apoio ao desenvolvimento e à documentação. O modelo do cenário, as decisões de escopo e de arquitetura e a verificação dos resultados foram definidos e conferidos pelo autor. Os resultados de testes e de CI citados vêm de execuções registradas e não são resultados ilustrativos.
+Este projeto é um estudo de caso acadêmico, com dados, empresas e atividades de gestão simulados.
+
+A IA generativa (Claude, da Anthropic) foi utilizada como apoio ao desenvolvimento e à documentação. As decisões e os resultados foram revisados pelo autor, e os testes citados seguem as evidências registradas.
+
+## Licença
+
+[MIT](LICENSE).
