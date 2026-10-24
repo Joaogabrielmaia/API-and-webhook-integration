@@ -1,6 +1,6 @@
 # PR: alerta de fila parada (v1.1.0)
 
-> Descrição do pull request #1 (merge `21e6b8b`). Branch `feat/stalled-queue-alert` → `main`.
+> Texto da descrição do PR da v1.1.0: branch `feat/stalled-queue-alert` → `main`, integrada no commit de merge `21e6b8b`.
 
 **Branch:** `feat/stalled-queue-alert` → `main` · **Versão:** `1.0.0` → `1.1.0` (aditiva)
 
