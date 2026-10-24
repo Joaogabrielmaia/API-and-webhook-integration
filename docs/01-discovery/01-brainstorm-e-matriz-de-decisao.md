@@ -23,7 +23,7 @@ Os pesos são julgamento meu, de 1 a 5, a partir do problema descrito.
 | C3 Esforço e custo de implantação (maior nota = mais barato) | 3 | Empresa de 25 pessoas. |
 | C4 Tolera indisponibilidade do ERP | 4 | Restrição que surgiu na reunião com TI ([reunião 3](05-reuniao-3-responsavel-de-ti.md)). |
 | C5 Manutenção por equipe pequena | 3 | Há uma pessoa de TI em meio período. |
-| C6 Valor como estudo de engenharia | 2 | Admito: este é um projeto de portfólio. Mostro abaixo que o resultado não depende deste critério. |
+| C6 Valor como estudo de engenharia | 2 | Peso baixo: o critério não vem do problema da Aurora. Mostro abaixo que o resultado não depende deste critério. |
 
 ## Notas (1 a 5): julgamento qualitativo, não medição
 
@@ -38,7 +38,7 @@ Os pesos são julgamento meu, de 1 a 5, a partir do problema descrito.
 Total = soma de (nota × peso). Exemplo da A: 5×5 + 5×5 + 2×3 + 5×4 + 3×3 + 5×2 = 95.
 
 ## Escolha: A, integração por API
-**Motivo.** É a única que combina eliminação total da redigitação com controle fino de falhas (retentativa, fila de falhas, reconciliação). Ganha também sem o critério C6, então a escolha não é só vaidade de portfólio.
+**Motivo.** É a única que combina eliminação total da redigitação com controle fino de falhas (retentativa, fila de falhas (dead-letter), reconciliação). Ganha também sem o critério C6, então a escolha não depende dele.
 
 **Trade-off.** É a mais cara de construir (nota 2 em C3) e exige alguém que saiba manter código.
 

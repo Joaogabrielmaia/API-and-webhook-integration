@@ -1,11 +1,11 @@
 # PR: alerta de fila parada (v1.1.0)
 
-> Este repositório não tem remoto: o "PR" é uma branch (`feat/stalled-queue-alert`) integrada por merge local em `main`. Este arquivo é o texto que iria na descrição de um pull request.
+> Texto da descrição do PR da v1.1.0: branch `feat/stalled-queue-alert` → `main`, integrada no commit de merge `21e6b8b`.
 
 **Branch:** `feat/stalled-queue-alert` → `main` · **Versão:** `1.0.0` → `1.1.0` (aditiva)
 
 ## Resumo
-Adiciona alertas operacionais calculados na hora: **fila parada** e **fila de falhas com itens esperando**. A Ponte os expõe em `GET /v1/admin/alerts` e o painel mostra um banner em todas as telas.
+Adiciona alertas operacionais calculados na hora: **fila parada** e **fila de falhas (dead-letter) com itens esperando**. A Ponte os expõe em `GET /v1/admin/alerts` e o painel mostra um banner em todas as telas.
 
 ## Por que
 Na [reunião de aceitação](../05-qualidade/reuniao-de-aceitacao.md) e na [retrospectiva](retrospectiva.md), o responsável de TI (simulado) apontou o risco R-07: se ninguém abrir o painel, uma fila parada passa despercebida. O comercial pediu "até 5 minutos" (RNF-01); o limite do alerta vem desse número.

@@ -10,7 +10,7 @@ Formato dos critérios: Dado / Quando / Então. Cada história aponta para requi
 | US-04 | IDs do ERP no CRM | Must | 1 |
 | US-05 | Evento repetido é ignorado | Must | 2 |
 | US-06 | Retentativa quando o ERP falha | Must | 2 |
-| US-07 | Fila de falhas e reprocessamento | Must | 2 |
+| US-07 | Fila de falhas (dead-letter) e reprocessamento | Must | 2 |
 | US-08 | Pagamento atualiza o CRM | Should | 3 |
 | US-09 | Reconciliação aponta divergências | Must (promovida na reunião 3) | 3 |
 | US-10 | Mapeamento de campos configurável | Should | 1 e 3 |

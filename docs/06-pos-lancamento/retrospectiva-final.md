@@ -3,7 +3,7 @@
 Esta é a minha avaliação do projeto, em primeira pessoa. Ao contrário da [retrospectiva simulada](retrospectiva.md), aqui não há personagem: é o que eu tiro do trabalho.
 
 ## O que eu entreguei
-Um serviço de integração (a Ponte) que, quando uma venda é ganha em um CRM, cria o cliente, o pedido e a cobrança em um ERP e mantém os dois sincronizados. O CRM e o ERP são sistemas simples que eu mesmo criei para o estudo. O que eu quis mostrar é a **engenharia da integração**: idempotência, retentativa, fila de falhas, reconciliação, contratos de API e observabilidade.
+Um serviço de integração (a Ponte) que, quando uma venda é ganha em um CRM, cria o cliente, o pedido e a cobrança em um ERP e mantém os dois sincronizados. O CRM e o ERP são sistemas simples que eu mesmo criei para o estudo. O que eu quis mostrar é a **engenharia da integração**: idempotência, retentativa, fila de falhas (dead-letter), reconciliação, contratos de API e observabilidade.
 
 Em números que eu posso defender, todos de execuções registradas: 193 testes Vitest e 10 E2E passando, 44 operações de contrato exercitadas, um teste que derruba o ERP de verdade no meio de um lote de 20 sem perder nem duplicar nada, e 16 prints gerados pelo próprio sistema.
 

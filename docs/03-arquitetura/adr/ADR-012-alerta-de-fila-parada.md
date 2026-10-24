@@ -1,9 +1,9 @@
-# ADR-012: Alerta de fila parada (v1.1)
+# ADR-012 — Alerta de fila parada (v1.1)
 
 **Status:** aceita · **Origem:** [retrospectiva da v1.0](../../06-pos-lancamento/retrospectiva.md) · **Risco tratado:** R-07 · **Requisitos:** RF-11, RNF-01, RNF-05
 
 ## Contexto
-A fila de falhas é visível no painel, mas ninguém é avisado de que algo parou. Um worker que não roda, ou um ERP lento demais, deixa trabalho esperando em silêncio.
+A fila de falhas (dead-letter) é visível no painel, mas ninguém é avisado de que algo parou. Um worker que não roda, ou um ERP lento demais, deixa trabalho esperando em silêncio.
 
 ## Alternativas
 1. **Notificação ativa** (e-mail, chat): exige canal de saída e segredo extra, e o escopo exclui integrações novas.

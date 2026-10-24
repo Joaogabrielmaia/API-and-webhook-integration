@@ -6,7 +6,7 @@ Para quem acompanha a integração no dia a dia (no cenário fictício, a analis
 
 | Quando | O que olhar | Onde |
 |---|---|---|
-| No começo do dia | "Na fila de falhas" e "Divergências abertas" devem estar em zero, ou com motivo conhecido | Painel, **Visão geral** |
+| No começo do dia | "Na fila de falhas (dead-letter)" e "Divergências abertas" devem estar em zero, ou com motivo conhecido | Painel, **Visão geral** |
 | Depois de qualquer indisponibilidade do ERP | "Em retentativa" deve esvaziar sozinho; o que sobrar em "Fila de falhas" precisa de ação | Painel, **Eventos** e **Fila de falhas** |
 | Uma vez por semana, ou quando alguém reclamar | Rodar a reconciliação e ler a lista | Painel, **Divergências** |
 
@@ -70,3 +70,27 @@ Hoje: trocar a variável (`CRM_WEBHOOK_SECRET` ou `ERP_WEBHOOK_SECRET`) no produ
 
 ## Como investigar um evento
 Cada linha de log da Ponte traz `eventId`. No painel, abra o evento: o histórico de tentativas mostra cada erro, a duração e a próxima tentativa. O `requestId` de uma resposta de erro também aparece nos logs.
+
+## Cenários de demonstração
+Com a pilha no ar (`npm run dev:demo`), cada cenário dispara o fluxo de verdade contra os serviços. Rode em outro terminal:
+
+```bash
+npm run demo -- feliz           # negócio ganho → cliente, pedido e cobrança → IDs no CRM
+npm run demo -- duplicado       # o mesmo evento enviado de novo é ignorado
+npm run demo -- invalido        # CNPJ inválido vai direto para a fila de falhas (dead-letter)
+npm run demo -- erp-fora        # retentativas com backoff e depois fila de falhas
+npm run demo -- reprocessar     # do ERP fora ao evento concluído, sem duplicar
+npm run demo -- pagamento       # baixa no ERP atualiza o CRM
+npm run demo -- reconciliacao   # divergência de valor apontada
+npm run demo -- todos
+```
+
+A saída real de uma execução está em [demo-cenarios.txt](../05-qualidade/resultados/demo-cenarios.txt).
+
+## Testes e prints
+```bash
+npm test               # Vitest: unitário, integração, contrato e falha injetada (cria e migra os bancos de teste sozinho)
+npm run test:e2e       # Playwright: sobe a própria pilha (portas 4100 a 4103) e regenera docs/screenshots
+npm run test:record    # roda tudo e grava a saída em docs/05-qualidade/resultados
+```
+O Playwright precisa do Chromium: `npx playwright install chromium`. Atenção: `test:e2e` regenera os prints e `test:record` regrava os registros de `resultados/`, que hoje são do commit `fcf035d` (2026-10-23).

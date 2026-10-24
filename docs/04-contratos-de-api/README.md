@@ -1,3 +1,21 @@
+# Episódio 4 — Contratos de API
+
+Os três contratos OpenAPI (CRM, ERP e Ponte) foram escritos antes do código. Os testes de contrato chamam os serviços de verdade e conferem cada resposta contra o esquema; o teste falha se alguma operação ficar sem exercício, e o registro de 2026-10-23 (commit `fcf035d`) mostra 44 de 44 operações cobertas.
+O catálogo reúne 35 códigos de erro, cada um com causa e ação recomendada, e é gerado da mesma fonte que o código usa. A política de versão separa mudança aditiva de quebra.
+
+| Documento | O que contém | Itens |
+|---|---|---|
+| [Índice e política de versão](#convenções-comuns) | Convenções comuns e regras de versão | 3 contratos |
+| [crm.openapi.yaml](crm.openapi.yaml) | API do CRM e o evento `deal.won` | 13 operações |
+| [erp.openapi.yaml](erp.openapi.yaml) | API do ERP, idempotência por `externalRef` e o evento `invoice.paid` | 17 operações |
+| [ponte.openapi.yaml](ponte.openapi.yaml) | Webhooks assinados e API administrativa (1.1.0) | 14 operações |
+| [Exemplos](exemplos.md) | Requisições e respostas | 5 blocos |
+| [Catálogo de erros](catalogo-de-erros.md) | Código, tipo, HTTP, causa e ação | 35 códigos |
+
+← [Episódio 3 — Arquitetura](../03-arquitetura/README.md) · [Índice](../INDEX.md) · [Episódio 5 — Qualidade](../05-qualidade/README.md) →
+
+---
+
 # 04 — Contratos de API
 
 Os contratos foram escritos **antes do código** e são validados por testes de contrato (`tests/contract`), que chamam os serviços de verdade e conferem cada resposta contra o esquema do OpenAPI.

@@ -1,6 +1,6 @@
 # 02 — O negócio: Serviços Aurora
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 A Serviços Aurora é uma empresa **fictícia**, criada para este estudo. Ela presta serviços de manutenção e conservação predial para condomínios e pequenas empresas na região metropolitana de Belo Horizonte. Tem 25 pessoas: 4 no comercial, 3 no financeiro, 1 em TI (meio período) e o restante na operação em campo.
 

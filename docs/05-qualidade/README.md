@@ -1,3 +1,22 @@
+# Episódio 5 — Qualidade
+
+A restrição da reunião com TI é provada em um teste que derruba o ERP de verdade no meio de um lote. No cenário A, 20 negócios: 20 processados, 0 duplicidade, maior número de tentativas 6. No cenário B, 5 eventos vão para a fila de falhas (dead-letter) e 5 são processados depois do reprocessamento.
+O registro dos testes é de 2026-10-23, commit `fcf035d`: 193 Vitest e 10 Playwright passando. O registro de problemas traz 12 itens, inclusive erros de teste e de desenho.
+A aceitação e as revisões de sprint ficam ao lado; a aceitação é simulada, e a página diz o que ela não prova.
+
+| Documento | O que contém | Itens |
+|---|---|---|
+| [Estratégia e resultados](#estratégia-de-testes) | Camadas de teste, execução registrada, limites declarados | 5 camadas |
+| [Falha injetada](falha-injetada.md) | ERP derrubado durante um lote | cenários A e B |
+| [Problemas e aprendizados](bugs-e-aprendizados.md) | O que deu errado e o que mudou | 12 itens |
+| [Reunião de aceitação](reuniao-de-aceitacao.md) | Cenários executados e reações (reunião simulada) | 8 cenários |
+| [Sprint 1](sprint-1-review.md) · [Sprint 2](sprint-2-review.md) · [Sprint 3](sprint-3-review.md) | Revisões por marco de entrega | 3 revisões |
+| [Resultados brutos](resultados/execucao-dos-testes.txt) | Saída dos testes, JSON da falha injetada, saída dos cenários | [execução completa](resultados/execucao-dos-testes-completa.txt) |
+
+← [Episódio 4 — Contratos de API](../04-contratos-de-api/README.md) · [Índice](../INDEX.md) · [Episódio 6 — Pós-lançamento](../06-pos-lancamento/README.md) →
+
+---
+
 # 05 — Qualidade
 
 Tudo o que está nesta pasta vem de execuções reais. Quando um número aparece, existe um arquivo em [resultados/](resultados/) ou um comando que o reproduz.
@@ -7,7 +26,7 @@ Tudo o que está nesta pasta vem de execuções reais. Quando um número aparece
 | Camada | Ferramenta | Onde | O que prova |
 |---|---|---|---|
 | Unitário | Vitest | `apps/**/src/**/*.test.ts`, `packages/**/src/**/*.test.ts` | Funções puras: transformações (CNPJ, telefone, valor, prazo), motor de mapeamento, backoff, HMAC, regras de negócio, catálogo de erros |
-| Integração | Vitest + PostgreSQL | `tests/integration` | Os três serviços reais conversando entre si por HTTP, cada um com seu banco: fluxo feliz, idempotência, retentativa, fila de falhas, fora de ordem, pagamento, reconciliação, mapeamento, segurança, fila |
+| Integração | Vitest + PostgreSQL | `tests/integration` | Os três serviços reais conversando entre si por HTTP, cada um com seu banco: fluxo feliz, idempotência, retentativa, fila de falhas (dead-letter), fora de ordem, pagamento, reconciliação, mapeamento, segurança, fila |
 | Contrato | Vitest + OpenAPI | `tests/contract` | Respostas reais de CRM, ERP e Ponte validadas contra os `.openapi.yaml`; eventos emitidos validados contra o esquema do **produtor e do consumidor** |
 | Falha injetada | Vitest | `tests/failure` | ERP derrubado **de verdade** (servidor fechado) durante um lote |
 | E2E | Playwright | `e2e/` | Telas reais do CRM, do ERP e do painel dirigidas por navegador; também gera os prints |

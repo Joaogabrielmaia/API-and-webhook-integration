@@ -1,6 +1,6 @@
 # 05 — Reunião 3: responsável de TI
 
-> Simulação: o Claude interpretou o cliente nesta conversa.
+> Reunião simulada; pessoas e empresa fictícias.
 
 **Participantes:** Rogério Lima (responsável de TI, meio período, da Serviços Aurora, fictício) e eu.
 **Objetivo:** entender o que os sistemas permitem e quais restrições técnicas existem.

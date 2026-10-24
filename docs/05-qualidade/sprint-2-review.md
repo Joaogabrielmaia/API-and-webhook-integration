@@ -9,7 +9,7 @@
 | Idempotência por chave de evento, inclusive em paralelo | US-05 | `idempotency.test.ts` (5): duplicata, 10 disparos simultâneos, reenvio pelo CRM, replay na janela, novo "Ganho" do mesmo negócio |
 | Fila em PostgreSQL com `SKIP LOCKED` | US-06 | `queue.test.ts` (5), escrito ao final do projeto |
 | Retentativa com backoff e histórico de tentativas | US-06 | `backoff.test.ts` (5), `retry-deadletter.test.ts` (10) |
-| Fila de falhas e reprocessamento manual | US-07 | `retry-deadletter.test.ts` |
+| Fila de falhas (dead-letter) e reprocessamento manual | US-07 | `retry-deadletter.test.ts` |
 | Evento fora de ordem | US-13 | `out-of-order.test.ts` (2) |
 | Segurança do webhook | US-01 | `webhook-security.test.ts` (13), `hmac.test.ts` (15) |
 | Mapeamento versionado | US-10 | `mapping.test.ts` de integração (4) |
