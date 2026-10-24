@@ -49,7 +49,7 @@ Os itens de 10 minutos, mais:
 
 ## Galeria
 
-16 prints gerados pelo sistema, em ordem de história, com legenda: [galeria](screenshots/README.md).
+17 prints gerados pelo sistema, em ordem de história, com legenda: [galeria](screenshots/README.md).
 
 ## Resultados brutos
 

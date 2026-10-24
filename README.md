@@ -34,7 +34,7 @@ CRM é o sistema do comercial; ERP é o do financeiro (pedidos e cobranças). Os
 </tr>
 </table>
 
-As 16 telas, em ordem de história, estão na [galeria](docs/screenshots/README.md).
+As 17 telas, em ordem de história, estão na [galeria](docs/screenshots/README.md).
 
 ## Duas entradas
 

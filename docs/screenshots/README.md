@@ -1,6 +1,6 @@
-# Galeria: o sistema em 16 telas
+# Galeria: o sistema em 17 telas
 
-Cada tela é um print gerado pelo próprio sistema: o Playwright dirige as telas reais, sobre bancos limpos (roteiro em [`e2e/console.spec.ts`](../../e2e/console.spec.ts)). A galeria segue a ordem do fluxo, da venda ganha até a execução dos testes; por isso o 16 (alerta da v1.1) aparece antes do 15.
+Cada tela é um print gerado pelo próprio sistema: o Playwright dirige as telas reais, sobre bancos limpos (roteiro em [`e2e/console.spec.ts`](../../e2e/console.spec.ts)). A galeria segue a ordem do fluxo, da venda ganha até a execução dos testes; por isso o 16 e o 17 (alertas da v1.1) aparecem antes do 15.
 
 [← Índice da série](../INDEX.md) · [Glossário](../GLOSSARIO.md)
 
@@ -91,6 +91,11 @@ Cada legenda tem duas partes: **o que se vê** · **por que importa**.
 
 **O que se vê:** dois banners no topo ("Fila parada: há trabalho esperando há 6 min sem ser processado (limite: 5 min). O worker está pausado." e o da fila de falhas) e o cartão "espera mais antiga na fila" com 400 s. · **Por que importa:** veio da [retrospectiva](../06-pos-lancamento/retrospectiva.md); a decisão está no [ADR-012](../03-arquitetura/adr/ADR-012-alerta-de-fila-parada.md).
 
+### 17 · Painel: alerta crítico de fila parada (v1.1)
+![Painel da Ponte, Visão geral, com banner vermelho "Fila parada: há trabalho esperando há 16 min sem ser processado (limite: 5 min). O worker está pausado.", 1 evento recebido e espera mais antiga de 1.002 s](17-painel-alerta-critico.png)
+
+**O que se vê:** o banner em vermelho (nível crítico) com a espera de 16 min e o limite de 5 min, o cartão "espera mais antiga na fila" em 1.002 s e um evento "Negócio ganho (CRM)" ainda em **Recebido**, com 0 tentativas. · **Por que importa:** o alerta fica crítico a partir de 3× o limite (15 min), como descreve o [guia de operação](../06-pos-lancamento/guia-de-operacao.md#alertas-v11). O print foi gerado em 2026-10-24 com o worker pausado e o job marcado como vencido há cerca de 1.000 s, o mesmo recurso do roteiro E2E do print 16; não é uma espera real de 16 minutos.
+
 ### 15 · Execução dos testes
 ![Saída dos testes renderizada: Vitest com 23 arquivos e 193 testes passando, e Playwright com 10 testes passando; cabeçalho com a data 2026-10-23, commit fcf035d e Node v24.14.0](15-execucao-dos-testes.png)
 
@@ -101,4 +106,3 @@ Cada legenda tem duas partes: **o que se vê** · **por que importa**.
 - CRM, aba **Clientes**.
 - CRM, aba **Entregas de webhook** (o print 01 mostra só a tabela "Webhooks enviados" do negócio).
 - Painel, **Eventos** nos outros filtros (o print 08 cobre só "Em retentativa").
-- Alerta **crítico** de fila parada (o print 16 mostra o nível de aviso; a regra de severidade está no [guia de operação](../06-pos-lancamento/guia-de-operacao.md#alertas-v11)).
