@@ -188,7 +188,7 @@ Contagens do registro de [2026-10-23, commit `fcf035d`](docs/05-qualidade/result
 
 ## Implantação, operação e adoção
 
-Existe a execução local, o painel, os alertas e o [guia de operação](docs/06-pos-lancamento/guia-de-operacao.md). Topologia de produção, rollout em modo sombra, rollback e treinamento são plano, não execução; detalhes em [08 Implantação e operação](docs/ciclo-de-vida/08-implantacao-e-operacao.md). Instruções de execução local: [CONTRIBUTING.md](CONTRIBUTING.md).
+Existe a execução local, o painel, os alertas e o [guia de operação](docs/06-pos-lancamento/guia-de-operacao.md). Topologia de produção, rollout em modo sombra, rollback e treinamento são plano, não execução; detalhes em [08 Implantação e operação](docs/ciclo-de-vida/08-implantacao-e-operacao.md).
 
 ## Gestão de configuração e evolução
 
